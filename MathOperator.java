@@ -29,6 +29,22 @@ public class MathOperator extends AFD {
                     return new Token("MUL_ASSIGN", "*=");
                 }
                 return new Token("MUL", "*");
+
+            case '/':
+                code.next();
+                if (code.current() == '=') {
+                    code.next();
+                    return new Token("DIV_ASSIGN", "/=");
+                }
+                return new Token("DIV", "/");
+
+            case '%':
+                code.next();
+                if (code.current() == '=') {
+                    code.next();
+                    return new Token("MOD_ASSIGN", "%=");
+                }
+                return new Token("MOD", "%");
                 
             case CharacterIterator.DONE:
                 return new Token("EOF", "$");

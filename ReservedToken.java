@@ -69,7 +69,8 @@ public class ReservedToken extends AFD {
                     return new Token("NEQ", "!=");
                 }
                 return new Token("NOT", "!");
-                
+
+           
             case CharacterIterator.DONE:
                 return new Token("EOF", "");
                 
