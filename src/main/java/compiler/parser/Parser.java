@@ -1,3 +1,7 @@
+package compiler.parser;
+
+import compiler.lexer.Token;
+
 import java.util.List;
 
 public class Parser {

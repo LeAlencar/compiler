@@ -1,8 +1,9 @@
+package compiler.lexer;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Lexer {
     
@@ -48,7 +49,7 @@ public class Lexer {
     }
     
     private void error() {
-        throw new RuntimeException("Error: token not recognized: " + code.current());
+        throw new RuntimeException("Erro: token não reconhecido: " + code.current());
     }
 }
 

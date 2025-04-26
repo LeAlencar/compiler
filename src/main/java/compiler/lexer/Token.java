@@ -1,3 +1,4 @@
+package compiler.lexer;
 
 public class Token {
     private String lexema;

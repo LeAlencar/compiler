@@ -1,3 +1,5 @@
+package compiler.parser;
+
 public class Tree {
 
   Node root;
