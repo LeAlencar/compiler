@@ -1,3 +1,5 @@
+package compiler.lexer;
+
 import java.text.CharacterIterator;
 
 public class ReservedToken extends AFD {
