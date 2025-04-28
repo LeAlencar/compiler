@@ -86,10 +86,8 @@ public class Parser {
 
   private boolean bloco() {
     if (matchT("LBRACE", token.getLexema())) {
-      while (!token.getTipo().equals("RBRACE")) {
-        if (!statement()) {
-          return false;
-        }
+      while (statement() && !token.getTipo().equals("RBRACE")) {
+        // Continue processing statements
       }
       return matchT("RBRACE", token.getLexema());
     }
@@ -107,23 +105,41 @@ public class Parser {
 
   private boolean condicao() {
     if (matchT("LPAREN", token.getLexema())) {
-      if (expressao()) {
+      if (expressaoComparativa()) {
         if (matchT("RPAREN", token.getLexema())) {
           return true;
         }
       }
       return false;
     }
-    return expressao();
+    return expressaoComparativa();
+  }
+
+  private boolean expressaoComparativa() {
+    if (termo()) {
+      if (operador()) {
+        if (termo()) {
+          return true;
+        }
+        return false;
+      }
+      return true;
+    }
+    return false;
   }
 
   private boolean operador() {
-    return matchT("GTR", token.getLexema()) ||
-        matchT("LSS", token.getLexema()) ||
-        matchT("EQL", token.getLexema()) ||
-        matchT("NEQ", token.getLexema()) ||
-        matchT("GEQ", token.getLexema()) ||
-        matchT("LEQ", token.getLexema());
+    if (token != null && (token.getTipo().equals("GTR") ||
+        token.getTipo().equals("LSS") ||
+        token.getTipo().equals("EQL") ||
+        token.getTipo().equals("NEQ") ||
+        token.getTipo().equals("GEQ") ||
+        token.getTipo().equals("LEQ"))) {
+      traduz(token.getLexema());
+      token = getNextToken();
+      return true;
+    }
+    return false;
   }
 
   private boolean id() {
@@ -142,11 +158,22 @@ public class Parser {
 
   private boolean whileLoop() {
     if (matchT("WHILE", token.getLexema()) &&
-        matchT("LPAREN", token.getLexema()) &&
-        expressao() &&
-        matchT("RPAREN", token.getLexema()) &&
-        bloco()) {
-      return true;
+        matchT("LPAREN", token.getLexema())) {
+      // Special handling for condition with > operator
+      if (termo()) {
+        if (token != null && token.getTipo().equals("GTR")) {
+          traduz(token.getLexema());
+          token = getNextToken();
+          if (termo() && matchT("RPAREN", token.getLexema()) && bloco()) {
+            return true;
+          }
+        } else {
+          // Regular condition processing
+          if (operador() && termo() && matchT("RPAREN", token.getLexema()) && bloco()) {
+            return true;
+          }
+        }
+      }
     }
     return false;
   }
@@ -155,11 +182,25 @@ public class Parser {
     if (matchT("DO", token.getLexema()) &&
         bloco() &&
         matchT("WHILE", token.getLexema()) &&
-        matchT("LPAREN", token.getLexema()) &&
-        expressao() &&
-        matchT("RPAREN", token.getLexema()) &&
-        matchT("SEMICOLON", ";")) {
-      return true;
+        matchT("LPAREN", token.getLexema())) {
+
+      // Handle condition with comparison operator
+      if (termo()) {
+        if (token != null && (token.getTipo().equals("GTR") ||
+            token.getTipo().equals("LSS") ||
+            token.getTipo().equals("EQL") ||
+            token.getTipo().equals("NEQ") ||
+            token.getTipo().equals("GEQ") ||
+            token.getTipo().equals("LEQ"))) {
+          traduz(token.getLexema());
+          token = getNextToken();
+          if (termo() &&
+              matchT("RPAREN", token.getLexema()) &&
+              matchT("SEMICOLON", ";")) {
+            return true;
+          }
+        }
+      }
     }
     return false;
   }
@@ -167,13 +208,27 @@ public class Parser {
   private boolean forLoop() {
     if (matchT("FOR", token.getLexema()) &&
         matchT("LPAREN", token.getLexema()) &&
-        (declaracao() || (expressao() && matchT("SEMICOLON", ";"))) &&
-        expressao() &&
-        matchT("SEMICOLON", ";") &&
-        expressao() &&
-        matchT("RPAREN", token.getLexema()) &&
-        bloco()) {
-      return true;
+        (declaracao() || (expressao() && matchT("SEMICOLON", ";")))) {
+
+      // Handle condition with comparison operator
+      if (termo()) {
+        if (token != null && (token.getTipo().equals("GTR") ||
+            token.getTipo().equals("LSS") ||
+            token.getTipo().equals("EQL") ||
+            token.getTipo().equals("NEQ") ||
+            token.getTipo().equals("GEQ") ||
+            token.getTipo().equals("LEQ"))) {
+          traduz(token.getLexema());
+          token = getNextToken();
+          if (termo() &&
+              matchT("SEMICOLON", ";") &&
+              expressao() &&
+              matchT("RPAREN", token.getLexema()) &&
+              bloco()) {
+            return true;
+          }
+        }
+      }
     }
     return false;
   }
@@ -181,20 +236,9 @@ public class Parser {
   private boolean expressao() {
     if (atribuicao()) {
       return true;
-    } else if (termo()) {
-      // Check if there's an operator after the term
-      if (token != null && (token.getTipo().equals("GTR") ||
-          token.getTipo().equals("LSS") ||
-          token.getTipo().equals("EQL") ||
-          token.getTipo().equals("NEQ") ||
-          token.getTipo().equals("GEQ") ||
-          token.getTipo().equals("LEQ"))) {
-        String op = token.getLexema();
-        token = getNextToken();
-        return termo();
-      } else if (operadorMatematico()) {
-        return termo();
-      }
+    } else if (expressaoComparativa()) {
+      return true;
+    } else if (expressaoMatematica()) {
       return true;
     }
     return false;
@@ -203,10 +247,26 @@ public class Parser {
   private boolean atribuicao() {
     if (id()) {
       if (operadorAtribuicao()) {
-        if (termo()) {
+        if (expressaoMatematica()) {
           return true;
         }
       }
+    }
+    return false;
+  }
+
+  private boolean expressaoMatematica() {
+    if (termo()) {
+      if (token != null && (token.getTipo().equals("ADD") ||
+          token.getTipo().equals("SUB") ||
+          token.getTipo().equals("MUL") ||
+          token.getTipo().equals("DIV") ||
+          token.getTipo().equals("MOD"))) {
+        traduz(token.getLexema());
+        token = getNextToken();
+        return termo();
+      }
+      return true;
     }
     return false;
   }
