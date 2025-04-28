@@ -275,23 +275,6 @@ public class Parser {
     return id() || num();
   }
 
-  private boolean operadorMatematico() {
-    return matchT("ADD", token.getLexema()) ||
-        matchT("SUB", token.getLexema()) ||
-        matchT("MUL", token.getLexema()) ||
-        matchT("DIV", token.getLexema()) ||
-        matchT("MOD", token.getLexema());
-  }
-
-  private boolean matchL(String palavra, String newcode) {
-    if (token.getLexema().equals(palavra)) {
-      traduz(newcode);
-      token = getNextToken();
-      return true;
-    }
-    return false;
-  }
-
   private boolean matchT(String tipo, String lexema) {
     if (token.getTipo().equals(tipo)) {
       traduz(lexema);
