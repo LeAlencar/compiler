@@ -15,16 +15,18 @@ public class Parser {
 
   public void main() {
     token = getNextToken();
-    if(ifelse()){
+    if(ifelse() || declaracao()){
       if (token.getTipo().equals("EOF")){
         System.out.println("\nSintaticamente correta");
         return;
       }
       else{
-        erro();
+        main();
       }
     }
-    erro();
+    else{
+      erro();
+    }
   }
 
   public Token getNextToken() {
@@ -38,16 +40,24 @@ public class Parser {
     System.out.println("token inválido: " + token.getLexema());
   }
 
+  private boolean declaracao() {
+    if ((matchT("TYPE_INT", token.getLexema()) || matchT("TYPE_STRING", token.getLexema()) || 
+    matchT("TYPE_BOOL", token.getLexema())) && id() && matchT("ASSIGN", token.getLexema()) && (num() || id()) && matchT("SEMICOLON", token.getLexema())){
+      return true;
+    }
+    return false;
+  }
+
   private boolean ifelse() {
-    if (matchT("IF") && condicao() && bloco() && matchT("ELSE") && bloco()){
+    if (matchT("IF", token.getLexema()) && condicao() && bloco() && matchT("ELSE", token.getLexema()) && bloco()){
       return true;
     }
     return false;
   }
 
   private boolean bloco() {
-    if (matchT("LBRACE")) {
-      if (id() && operadorAtribuicao() && num() && matchT("RBRACE")) {
+    if (matchT("LBRACE", token.getLexema())) {
+      if (id() && operadorAtribuicao() && num() && matchT("RBRACE", token.getLexema())) {
         return true;
       }
       return false;
@@ -56,15 +66,15 @@ public class Parser {
   }
 
   private boolean operadorAtribuicao() {
-    if(matchT("ASSIGN")){
+    if(matchT("ASSIGN", token.getLexema())){
       return true;
     }
     return false;
   }
 
   private boolean condicao() {
-    if (matchT("LPAREN")) {
-      if (id() && operador() && num() && matchT("RPAREN")) {
+    if (matchT("LPAREN", token.getLexema())) {
+      if (id() && operador() && num() && matchT("RPAREN", token.getLexema())) {
         return true;
       }
       return false;
@@ -73,40 +83,66 @@ public class Parser {
   }
 
   private boolean operador() {
-    if (matchT("GTR") || matchT("LSS") || matchT("EQL") || 
-        matchT("GEQ") || matchT("LEQ") || matchT("NEQ")) {
+    if (matchT("GTR", token.getLexema()) || matchT("LSS", token.getLexema()) || matchT("EQL", token.getLexema()) || 
+        matchT("GEQ", token.getLexema()) || matchT("LEQ", token.getLexema()) || matchT("NEQ", token.getLexema())) {
       return true;
     }
     return false;
   }
 
   private boolean id() {
-    if (matchT("ID")){
+    if (matchT("ID", token.getLexema())){
       return true;
     }
     return false;
   }
 
   private boolean num() {
-    if(matchT("NUM")){
+    if(matchT("NUM", token.getLexema())){
       return true;
     }
     return false;
   }
 
-  private boolean matchL(String palavra){
+  private boolean matchL(String palavra, String newcode){
     if (token.getLexema().equals(palavra)){
+      traduz(newcode);
       token = getNextToken();
       return true;
     }
     return false;
   }
 
-  private boolean matchT(String palavra){
+  private boolean matchT(String palavra, String newcode){
     if (token.getTipo().equals(palavra)){
+      traduz(newcode);
       token = getNextToken();
       return true;
     }
     return false;
+  }
+
+  private void traduz(String code) {
+    if (code.equals("se")){
+      System.out.print("if");
+    }
+    else if (code.equals("altrimenti")){
+      System.out.print("else");
+    }
+    else if (code.equals("intero")){
+      System.out.print("int");
+    }
+    else if (code.equals("stringa")){
+      System.out.print("string ");
+    }
+    else if (code.equals("booleano")){
+      System.out.print("boolean ");
+    }
+    else if (code.equals(";")){
+      System.out.println(";");
+    }
+    else {
+      System.out.print(" " + code);
+    }    
   }
 }
