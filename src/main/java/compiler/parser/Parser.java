@@ -42,7 +42,7 @@ public class Parser {
 
   private boolean declaracao() {
     if ((matchT("TYPE_INT", token.getLexema()) || matchT("TYPE_STRING", token.getLexema()) || 
-    matchT("TYPE_BOOL", token.getLexema())) && id() && matchT("ASSIGN", token.getLexema()) && (num() || id()) && matchT("SEMICOLON", token.getLexema())){
+    matchT("TYPE_BOOL", token.getLexema())) && id() && matchT("ASSIGN", token.getLexema()) && (num() || id())){
       return true;
     }
     return false;
