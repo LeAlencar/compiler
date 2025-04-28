@@ -7,14 +7,12 @@ import compiler.parser.Parser;
 import java.io.IOException;
 import java.util.List;
 
-
-public class Main
-{
+public class Main {
     public static void main(String[] args) throws IOException {
         List<Token> tokens = null;
 
         // Exemplo de entrada com sintaxe em italiano
-        String data = "intero _num=10;se (_num > 5) { _x = 10 } altrimenti { _x = 20 }";
+        String data = "intero x = 10;mentre (x > 0) {x -= 1}per (intero i = 0; i < 10; i += 1) {x = x * 2}fare {x = x / 2}mentre (x > 100);";
 
         // Análise léxica
         Lexer lexer = new Lexer(data);
