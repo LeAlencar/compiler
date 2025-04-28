@@ -14,7 +14,7 @@ public class Main
         List<Token> tokens = null;
 
         // Exemplo de entrada com sintaxe em italiano
-        String data = "se (_num > 5) { _x = 10 } altrimenti { _x = 20 }";
+        String data = "intero _num=10;se (_num > 5) { _x = 10 } altrimenti { _x = 20 }";
 
         // Análise léxica
         Lexer lexer = new Lexer(data);

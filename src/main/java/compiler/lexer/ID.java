@@ -6,13 +6,13 @@ public class ID extends AFD {
     
     @Override
     public Token evaluate(CharacterIterator code) {
-        if (code.current() == '_') {
+        if (code.current() == '_' || Character.isLetter(code.current())) {
             StringBuilder identifier = new StringBuilder();
             
             identifier.append(code.current());
             code.next();
             
-            while (Character.isLetterOrDigit(code.current())) {
+            while (Character.isLetterOrDigit(code.current()) || code.current() == '_') {
                 identifier.append(code.current());
                 code.next();
             }

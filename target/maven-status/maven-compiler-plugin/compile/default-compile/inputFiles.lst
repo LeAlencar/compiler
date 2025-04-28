@@ -1,0 +1,11 @@
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/AFD.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/ID.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/Lexer.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/MathOperator.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/Number.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/ReservedToken.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/Token.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/main/Main.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/parser/Node.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/parser/Parser.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/parser/Tree.java
