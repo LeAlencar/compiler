@@ -3,7 +3,7 @@ package compiler.main;
 import compiler.lexer.Lexer;
 import compiler.lexer.Token;
 import compiler.parser.Parser;
-
+import compiler.parser.Tree;
 import java.io.IOException;
 import java.util.List;
 
