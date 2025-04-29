@@ -3,7 +3,7 @@ package compiler.main;
 import compiler.lexer.Lexer;
 import compiler.lexer.Token;
 import compiler.parser.Parser;
-
+import compiler.parser.Tree;
 import java.io.IOException;
 import java.util.List;
 
@@ -12,7 +12,7 @@ public class Main {
         List<Token> tokens = null;
 
         // Exemplo de entrada com sintaxe em italiano
-        String data = "intero x = 10;mentre (x > 0) {x -= 1}per (intero i = 0; i < 10; i += 1) {x = x * 2}fare {x = x / 2}mentre (x > 100);";
+        String data = "se (_x > 0) {_x = 2}altrimenti {_x = 3}";
 
         // Análise léxica
         Lexer lexer = new Lexer(data);
