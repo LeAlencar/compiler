@@ -17,22 +17,20 @@ public class Parser {
     token = getNextToken();
     Node root = new Node("main");
     Tree tree = new Tree(root);
-    if(sealtrimenti(root) || mentrefare(root) || declaracao(root)){
-      if (token.getTipo().equals("EOF")){
-        System.out.println("\nSintaticamente correta\n");
-        tree.preOrder();
-        tree.printCode();
-        tree.printTree();
 
+    while (token != null && !token.getTipo().equals("EOF")) {
+      if (sealtrimenti(root) || mentrefare(root) || dowhile(root) || forloop(root) || declaracao(root)) {
+        continue;
+      } else {
+        erro();
         return;
       }
-      else{
-        main();
-      }
     }
-    else{
-      erro();
-    }
+
+    System.out.println("\nSintaticamente correta\n");
+    tree.preOrder();
+    tree.printCode();
+    tree.printTree();
   }
 
   public Token getNextToken() {
@@ -48,20 +46,28 @@ public class Parser {
 
   private boolean sealtrimenti(Node node) {
     Node sealtrimenti = new Node("sealtrimenti");
-    if (matchL("se", token.getLexema(), sealtrimenti) && matchL("(", token.getLexema(), sealtrimenti) && condicao(sealtrimenti) && 
-    matchL(")", token.getLexema(), sealtrimenti) && matchL("{", token.getLexema(), sealtrimenti) && bloco(sealtrimenti) && 
-    matchL("}", token.getLexema(), sealtrimenti) && matchL("altrimenti", token.getLexema(), sealtrimenti) && 
-    matchL("{", token.getLexema(), sealtrimenti) && bloco(sealtrimenti) && matchL("}", token.getLexema(), sealtrimenti)){
+    if (matchL("se", token.getLexema(), sealtrimenti) && matchL("(", token.getLexema(), sealtrimenti)
+        && condicao(sealtrimenti) &&
+        matchL(")", token.getLexema(), sealtrimenti) && matchL("{", token.getLexema(), sealtrimenti)
+        && bloco(sealtrimenti) &&
+        matchL("}", token.getLexema(), sealtrimenti) && matchL("altrimenti", token.getLexema(), sealtrimenti) &&
+        matchL("{", token.getLexema(), sealtrimenti) && bloco(sealtrimenti)
+        && matchL("}", token.getLexema(), sealtrimenti)) {
       node.addNode(sealtrimenti);
       return true;
     }
-      return false;
+    return false;
   }
 
   private boolean mentrefare(Node node) {
     Node mentrefare = new Node("mentrefare");
-    if (matchL("mentre", token.getLexema(), mentrefare) && condicao(mentrefare) && bloco(mentrefare) && 
-    matchL("fare", token.getLexema(), mentrefare) && bloco(mentrefare)){
+    if (matchL("mentre", token.getLexema(), mentrefare) &&
+        matchL("(", token.getLexema(), mentrefare) &&
+        condicao(mentrefare) &&
+        matchL(")", token.getLexema(), mentrefare) &&
+        matchL("{", token.getLexema(), mentrefare) &&
+        bloco(mentrefare) &&
+        matchL("}", token.getLexema(), mentrefare)) {
       node.addNode(mentrefare);
       return true;
     }
@@ -70,10 +76,13 @@ public class Parser {
 
   private boolean declaracao(Node node) {
     Node declaracao = new Node("declaracao");
-    if ((matchL("intero", token.getLexema(), declaracao) || matchL("stringa", token.getLexema(), declaracao) || 
-    matchL("booleano", token.getLexema(), declaracao)) && id(declaracao) && operadorAtribuicao(declaracao) && 
-    (num(declaracao) || id(declaracao) || matchL("true", token.getLexema(), declaracao) || matchL("false", token.getLexema(), declaracao)) && 
-    matchL(";", token.getLexema(), declaracao)){
+    if ((matchL("intero", token.getLexema(), declaracao) || matchL("stringa", token.getLexema(), declaracao) ||
+        matchL("booleano", token.getLexema(), declaracao)) && id(declaracao) &&
+        (operadorAtribuicao(declaracao) || operadorAritmetico(declaracao)) &&
+        (num(declaracao) || id(declaracao) || matchL("true", token.getLexema(), declaracao)
+            || matchL("false", token.getLexema(), declaracao))
+        &&
+        matchL(";", token.getLexema(), declaracao)) {
       node.addNode(declaracao);
       return true;
     }
@@ -82,7 +91,7 @@ public class Parser {
 
   private boolean bloco(Node node) {
     Node bloco = new Node("bloco");
-    if (id(bloco) && (operadorAtribuicao(bloco) || operadorAritmetico(bloco)) && (num(bloco) || id(bloco))){
+    if (id(bloco) && (operadorAtribuicao(bloco) || operadorAritmetico(bloco)) && (num(bloco) || id(bloco))) {
       node.addNode(bloco);
       return true;
     }
@@ -92,9 +101,9 @@ public class Parser {
 
   private boolean operadorAtribuicao(Node node) {
     Node operador = new Node("operador");
-    if(matchL("+=", token.getLexema(), operador) || 
-    matchL("-=", token.getLexema(), operador) || matchL("*=", token.getLexema(), operador) || 
-    matchL("/=", token.getLexema(), operador) || matchL("%=", token.getLexema(), operador)){
+    if (matchL("+=", token.getLexema(), operador) ||
+        matchL("-=", token.getLexema(), operador) || matchL("*=", token.getLexema(), operador) ||
+        matchL("/=", token.getLexema(), operador) || matchL("%=", token.getLexema(), operador)) {
       node.addNode(operador);
       return true;
     }
@@ -104,7 +113,7 @@ public class Parser {
 
   private boolean condicao(Node node) {
     Node condicao = new Node("condicao");
-    if(id(condicao) && operadorRelacional(condicao) && (num(condicao) || id(condicao))){
+    if (id(condicao) && operadorRelacional(condicao) && (num(condicao) || id(condicao))) {
       node.addNode(condicao);
       return true;
     }
@@ -113,9 +122,9 @@ public class Parser {
 
   private boolean operadorAritmetico(Node node) {
     Node operadorAritmetico = new Node("operadorAritmetico");
-    if (matchL("+", token.getLexema(), operadorAritmetico) || matchL("-", token.getLexema(), operadorAritmetico) || 
-    matchL("=", token.getLexema(), operadorAritmetico) || matchT("MUL", token.getLexema(), operadorAritmetico) || 
-    matchT("DIV", token.getLexema(), operadorAritmetico) || matchT("MOD", token.getLexema(), operadorAritmetico)){
+    if (matchL("+", token.getLexema(), operadorAritmetico) || matchL("-", token.getLexema(), operadorAritmetico) ||
+        matchL("=", token.getLexema(), operadorAritmetico) || matchT("MUL", token.getLexema(), operadorAritmetico) ||
+        matchT("DIV", token.getLexema(), operadorAritmetico) || matchT("MOD", token.getLexema(), operadorAritmetico)) {
       node.addNode(operadorAritmetico);
       return true;
     }
@@ -124,9 +133,9 @@ public class Parser {
 
   private boolean operadorRelacional(Node node) {
     Node operadorRelacional = new Node("operadorRelacional");
-    if (matchL(">", token.getLexema(), operadorRelacional) || matchL("<", token.getLexema(), operadorRelacional) || 
-    matchL("==", token.getLexema(), operadorRelacional) || matchL("!=", token.getLexema(), operadorRelacional) || 
-    matchL(">=", token.getLexema(), operadorRelacional) || matchL("<=", token.getLexema(), operadorRelacional)){
+    if (matchL(">", token.getLexema(), operadorRelacional) || matchL("<", token.getLexema(), operadorRelacional) ||
+        matchL("==", token.getLexema(), operadorRelacional) || matchL("!=", token.getLexema(), operadorRelacional) ||
+        matchL(">=", token.getLexema(), operadorRelacional) || matchL("<=", token.getLexema(), operadorRelacional)) {
       node.addNode(operadorRelacional);
       return true;
     }
@@ -135,7 +144,7 @@ public class Parser {
 
   private boolean id(Node node) {
     Node id = new Node("id");
-    if (matchT("ID", token.getLexema(), id)){
+    if (matchT("ID", token.getLexema(), id)) {
       node.addNode(id);
       return true;
     }
@@ -144,15 +153,15 @@ public class Parser {
 
   private boolean num(Node node) {
     Node num = new Node("num");
-    if(matchT("NUM", token.getLexema(), num)){
+    if (matchT("NUM", token.getLexema(), num)) {
       node.addNode(num);
       return true;
     }
     return false;
   }
 
-  private boolean matchL(String palavra, String newcode, Node node){
-    if (token.getLexema().equals(palavra)){
+  private boolean matchL(String palavra, String newcode, Node node) {
+    if (token.getLexema().equals(palavra)) {
       traduz(newcode);
       node.addNode(newcode);
       token = getNextToken();
@@ -161,8 +170,8 @@ public class Parser {
     return false;
   }
 
-  private boolean matchT(String palavra, String newcode, Node node){
-    if (token.getTipo().equals(palavra)){
+  private boolean matchT(String palavra, String newcode, Node node) {
+    if (token.getTipo().equals(palavra)) {
       traduz(newcode);
       node.addNode(newcode);
       token = getNextToken();
@@ -202,5 +211,42 @@ public class Parser {
         System.out.print(" " + code + " ");
       }
     }
-}
+  }
+
+  private boolean dowhile(Node node) {
+    Node dowhile = new Node("dowhile");
+    if (matchL("fare", token.getLexema(), dowhile) &&
+        matchL("{", token.getLexema(), dowhile) &&
+        bloco(dowhile) &&
+        matchL("}", token.getLexema(), dowhile) &&
+        matchL("mentre", token.getLexema(), dowhile) &&
+        matchL("(", token.getLexema(), dowhile) &&
+        condicao(dowhile) &&
+        matchL(")", token.getLexema(), dowhile) &&
+        matchL(";", token.getLexema(), dowhile)) {
+      node.addNode(dowhile);
+      return true;
+    }
+    return false;
+  }
+
+  private boolean forloop(Node node) {
+    Node forloop = new Node("forloop");
+    if (matchL("per", token.getLexema(), forloop) &&
+        matchL("(", token.getLexema(), forloop) &&
+        declaracao(forloop) && // initialization
+        condicao(forloop) && // condition
+        matchL(";", token.getLexema(), forloop) &&
+        id(forloop) &&
+        operadorAtribuicao(forloop) &&
+        num(forloop) &&
+        matchL(")", token.getLexema(), forloop) &&
+        matchL("{", token.getLexema(), forloop) &&
+        bloco(forloop) &&
+        matchL("}", token.getLexema(), forloop)) {
+      node.addNode(forloop);
+      return true;
+    }
+    return false;
+  }
 }

@@ -12,7 +12,7 @@ public class Main {
         List<Token> tokens = null;
 
         // Exemplo de entrada com sintaxe em italiano
-        String data = "se (_x > 0) {_x = 2}altrimenti {_x = 3}";
+        String data = "intero _x = 10;mentre (_x > 0) {_x -= 1}per (intero _i = 0; _i < 10; _i += 1) {_x = _x * 2}fare {_x = _x / 2}mentre (_x > 100);";
 
         // Análise léxica
         Lexer lexer = new Lexer(data);
