@@ -1,7 +1,7 @@
 package compiler.parser;
 
 import compiler.lexer.Token;
-import compiler.parser.Node;
+
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class Parser {
     if (statements(root)) {
       if (token.getTipo().equals("EOF")) {
         System.out.println("\nSintaticamente correta");
-        printTree(root, 0);
+        tree.printTree();
         return;
       }
     }
@@ -78,7 +78,7 @@ public class Parser {
     Node declaracao = node.addNode("declaracao");
     if ((matchT("TYPE_INT", token.getLexema(), declaracao) || matchT("TYPE_STRING", token.getLexema(), declaracao) ||
         matchT("TYPE_BOOL", token.getLexema(), declaracao)) && id(declaracao) && 
-        matchT("ASSIGN", token.getLexema(), declaracao) && (num(declaracao) || id(declaracao))
+        operadorAtribuicao(declaracao) && (num(declaracao) || id(declaracao))
         && matchT("SEMICOLON", ";", declaracao)) {
       return true;
     }
@@ -376,18 +376,4 @@ public class Parser {
     }
   }
 
-  private void printTree(Node node, int level) {
-    // Print indentation based on level
-    for (int i = 0; i < level; i++) {
-      System.out.print("  ");
-    }
-    
-    // Print the current node
-    System.out.println("|- " + node.toString());
-    
-    // Recursively print all child nodes
-    for (Node child : node.nodes) {
-      printTree(child, level + 1);
-    }
-  }
 }
