@@ -12,7 +12,8 @@ public class Main {
         List<Token> tokens = null;
 
         // Exemplo de entrada com sintaxe em italiano
-        String data = "intero _x = 10;mentre (_x > 0) {_x -= 1;}per (intero _i = 0; _i < 10; _i += 1) {_x = 2;}fare {_x = 400;}mentre (_x > 100){_x -= 10;}";
+        String data = "intero _x = 10; intero _y = 5; se (_x > _y) {_x = _x + _y;} altrimenti {_y = _y + _x;} per (intero _i = 0; _i < 3; _i += 1) {_x = _x * 2;}";
+        // String data = "intero _x = 10; intero _y = 5; intero _z = _x * _y;";
 
         // Análise léxica
         Lexer lexer = new Lexer(data);
