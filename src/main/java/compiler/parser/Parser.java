@@ -190,40 +190,6 @@ public class Parser {
       System.out.print("for");
     } else if (code.equals(";")) {
       System.out.println(";");
-    } else if (code.equals("+=")) {
-      System.out.print(" += ");
-    } else if (code.equals("-=")) {
-      System.out.print(" -= ");
-    } else if (code.equals("*=")) {
-      System.out.print(" *= ");
-    } else if (code.equals("/=")) {
-      System.out.print(" /= ");
-    } else if (code.equals("%=")) {
-      System.out.print(" %= ");
-    } else if (code.equals("+")) {
-      System.out.print(" + ");
-    } else if (code.equals("-")) {
-      System.out.print(" - ");
-    } else if (code.equals("*")) {
-      System.out.print(" * ");
-    } else if (code.equals("/")) {
-      System.out.print(" / ");
-    } else if (code.equals("%")) {
-      System.out.print(" % ");
-    } else if (code.equals("==")) {
-      System.out.print(" == ");
-    } else if (code.equals("!=")) {
-      System.out.print(" != ");
-    } else if (code.equals(">=")) {
-      System.out.print(" >= ");
-    } else if (code.equals("<=")) {
-      System.out.print(" <= ");
-    } else if (code.equals(">")) {
-      System.out.print(" > ");
-    } else if (code.equals("<")) {
-      System.out.print(" < ");
-    } else if (code.equals("=")) {
-      System.out.print(" = ");
     } else if (code.equals("(") || code.equals(")") ||
         code.equals("{") || code.equals("}")) {
       System.out.print(" " + code + " ");
