@@ -1,6 +1,7 @@
 package compiler.parser;
 
 import compiler.lexer.Token;
+import compiler.parser.Node;
 
 import java.util.List;
 
@@ -15,9 +16,12 @@ public class Parser {
 
   public void main() {
     token = getNextToken();
-    if (statements()) {
+    Node root = new Node("main");
+    Tree tree = new Tree(root);
+    if (statements(root)) {
       if (token.getTipo().equals("EOF")) {
         System.out.println("\nSintaticamente correta");
+        printTree(root, 0);
         return;
       }
     }
@@ -35,8 +39,9 @@ public class Parser {
     System.out.println("token inválido: " + token.getLexema());
   }
 
-  private boolean statements() {
-    while (statement()) {
+  private boolean statements(Node node) {
+    Node statements = node.addNode("statements");
+    while (statement(statements)) {
       // Continue processing statements
       if (token.getTipo().equals("EOF")) {
         return true;
@@ -45,80 +50,88 @@ public class Parser {
     return false;
   }
 
-  private boolean statement() {
-    if (declaracao()) {
+  private boolean statement(Node node) {
+    Node statement = node.addNode("statement");
+    if (declaracao(statement)) {
       System.out.println();
       return true;
-    } else if (ifelse()) {
+    } else if (ifelse(statement)) {
       System.out.println();
       return true;
-    } else if (whileLoop()) {
+    } else if (whileLoop(statement)) {
       System.out.println();
       return true;
-    } else if (doWhileLoop()) {
+    } else if (doWhileLoop(statement)) {
       System.out.println();
       return true;
-    } else if (forLoop()) {
+    } else if (forLoop(statement)) {
       System.out.println();
       return true;
-    } else if (expressao() && matchT("SEMICOLON", ";")) {
+    } else if (expressao(statement) && matchT("SEMICOLON", ";", statement)) {
       System.out.println();
       return true;
     }
     return false;
   }
 
-  private boolean declaracao() {
-    if ((matchT("TYPE_INT", token.getLexema()) || matchT("TYPE_STRING", token.getLexema()) ||
-        matchT("TYPE_BOOL", token.getLexema())) && id() && matchT("ASSIGN", token.getLexema()) && (num() || id())
-        && matchT("SEMICOLON", ";")) {
+  private boolean declaracao(Node node) {
+    Node declaracao = node.addNode("declaracao");
+    if ((matchT("TYPE_INT", token.getLexema(), declaracao) || matchT("TYPE_STRING", token.getLexema(), declaracao) ||
+        matchT("TYPE_BOOL", token.getLexema(), declaracao)) && id(declaracao) && 
+        matchT("ASSIGN", token.getLexema(), declaracao) && (num(declaracao) || id(declaracao))
+        && matchT("SEMICOLON", ";", declaracao)) {
       return true;
     }
     return false;
   }
 
-  private boolean ifelse() {
-    if (matchT("IF", token.getLexema()) && condicao() && bloco() && matchT("ELSE", token.getLexema()) && bloco()) {
+  private boolean ifelse(Node node) {
+    Node ifelse = node.addNode("ifelse");
+    if (matchT("IF", token.getLexema(), ifelse) && condicao(ifelse) && bloco(ifelse) && matchT("ELSE", token.getLexema(), ifelse) && bloco(ifelse)) {
       return true;
     }
     return false;
   }
 
-  private boolean bloco() {
-    if (matchT("LBRACE", token.getLexema())) {
-      while (statement() && !token.getTipo().equals("RBRACE")) {
+  private boolean bloco(Node node) {
+    Node bloco = node.addNode("bloco");
+    if (matchT("LBRACE", token.getLexema(), bloco)) {
+      while (statement(bloco) && !token.getTipo().equals("RBRACE")) {
         // Continue processing statements
       }
-      return matchT("RBRACE", token.getLexema());
+      return matchT("RBRACE", token.getLexema(), bloco);
     }
-    return statement();
+    return statement(bloco);
   }
 
-  private boolean operadorAtribuicao() {
-    return matchT("ASSIGN", token.getLexema()) ||
-        matchT("ADD_ASSIGN", token.getLexema()) ||
-        matchT("SUB_ASSIGN", token.getLexema()) ||
-        matchT("MUL_ASSIGN", token.getLexema()) ||
-        matchT("DIV_ASSIGN", token.getLexema()) ||
-        matchT("MOD_ASSIGN", token.getLexema());
+  private boolean operadorAtribuicao(Node node) {
+    Node operadorAtribuicao = node.addNode("operadorAtribuicao");
+    return matchT("ASSIGN", token.getLexema(), operadorAtribuicao) ||
+        matchT("ADD_ASSIGN", token.getLexema(), operadorAtribuicao) ||
+        matchT("SUB_ASSIGN", token.getLexema(), operadorAtribuicao) ||
+        matchT("MUL_ASSIGN", token.getLexema(), operadorAtribuicao) ||
+        matchT("DIV_ASSIGN", token.getLexema(), operadorAtribuicao) ||
+        matchT("MOD_ASSIGN", token.getLexema(), operadorAtribuicao);
   }
 
-  private boolean condicao() {
-    if (matchT("LPAREN", token.getLexema())) {
-      if (expressaoComparativa()) {
-        if (matchT("RPAREN", token.getLexema())) {
+  private boolean condicao(Node node) {
+    Node condicao = node.addNode("condicao");
+    if (matchT("LPAREN", token.getLexema(), condicao)) {
+      if (expressaoComparativa(condicao)) {
+        if (matchT("RPAREN", token.getLexema(), condicao)) {
           return true;
         }
       }
       return false;
     }
-    return expressaoComparativa();
+    return expressaoComparativa(condicao);
   }
 
-  private boolean expressaoComparativa() {
-    if (termo()) {
+  private boolean expressaoComparativa(Node node) {
+    Node expressaoComparativa = node.addNode("expressaoComparativa");
+    if (termo(expressaoComparativa)) {
       if (operador()) {
-        if (termo()) {
+        if (termo(expressaoComparativa)) {
           return true;
         }
         return false;
@@ -142,35 +155,40 @@ public class Parser {
     return false;
   }
 
-  private boolean id() {
-    if (matchT("ID", token.getLexema())) {
+  private boolean id(Node node) {
+    Node id = node.addNode("id");
+    if (matchT("ID", token.getLexema(), id)) {
       return true;
     }
     return false;
   }
 
-  private boolean num() {
-    if (matchT("NUM", token.getLexema())) {
+  private boolean num(Node node) {
+    Node num = node.addNode("num");
+    if (matchT("NUM", token.getLexema(), num)) {
       return true;
     }
     return false;
   }
 
-  private boolean whileLoop() {
-    if (matchT("WHILE", token.getLexema()) &&
-        matchT("LPAREN", token.getLexema())) {
-      // Special handling for condition with > operator
-      if (termo()) {
-        if (token != null && token.getTipo().equals("GTR")) {
-          traduz(token.getLexema());
-          token = getNextToken();
-          if (termo() && matchT("RPAREN", token.getLexema()) && bloco()) {
-            return true;
-          }
-        } else {
-          // Regular condition processing
-          if (operador() && termo() && matchT("RPAREN", token.getLexema()) && bloco()) {
-            return true;
+  private boolean whileLoop(Node node) {
+    Node whileLoop = node.addNode("whileLoop");
+    if (matchT("WHILE", token.getLexema(), whileLoop)) {
+      // Check if we have a left parenthesis
+      if (matchT("LPAREN", token.getLexema(), whileLoop)) {
+        // Handle condition with comparison operator
+        if (termo(whileLoop)) {
+          if (token != null && (token.getTipo().equals("GTR") ||
+              token.getTipo().equals("LSS") ||
+              token.getTipo().equals("EQL") ||
+              token.getTipo().equals("NEQ") ||
+              token.getTipo().equals("GEQ") ||
+              token.getTipo().equals("LEQ"))) {
+            traduz(token.getLexema());
+            token = getNextToken();
+            if (termo(whileLoop) && matchT("RPAREN", token.getLexema(), whileLoop) && bloco(whileLoop)) {
+              return true;
+            }
           }
         }
       }
@@ -178,14 +196,15 @@ public class Parser {
     return false;
   }
 
-  private boolean doWhileLoop() {
-    if (matchT("DO", token.getLexema()) &&
-        bloco() &&
-        matchT("WHILE", token.getLexema()) &&
-        matchT("LPAREN", token.getLexema())) {
+  private boolean doWhileLoop(Node node) {
+    Node doWhileLoop = node.addNode("doWhileLoop");
+    if (matchT("DO", token.getLexema(), doWhileLoop) &&
+        bloco(doWhileLoop) &&
+        matchT("WHILE", token.getLexema(), doWhileLoop) &&
+        matchT("LPAREN", token.getLexema(), doWhileLoop)) {
 
       // Handle condition with comparison operator
-      if (termo()) {
+      if (termo(doWhileLoop)) {
         if (token != null && (token.getTipo().equals("GTR") ||
             token.getTipo().equals("LSS") ||
             token.getTipo().equals("EQL") ||
@@ -194,9 +213,9 @@ public class Parser {
             token.getTipo().equals("LEQ"))) {
           traduz(token.getLexema());
           token = getNextToken();
-          if (termo() &&
-              matchT("RPAREN", token.getLexema()) &&
-              matchT("SEMICOLON", ";")) {
+          if (termo(doWhileLoop) &&
+              matchT("RPAREN", token.getLexema(), doWhileLoop) &&
+              matchT("SEMICOLON", ";", doWhileLoop)) {
             return true;
           }
         }
@@ -205,13 +224,14 @@ public class Parser {
     return false;
   }
 
-  private boolean forLoop() {
-    if (matchT("FOR", token.getLexema()) &&
-        matchT("LPAREN", token.getLexema()) &&
-        (declaracao() || (expressao() && matchT("SEMICOLON", ";")))) {
+  private boolean forLoop(Node node) {
+    Node forLoop = node.addNode("forLoop");
+    if (matchT("FOR", token.getLexema(), forLoop) &&
+        matchT("LPAREN", token.getLexema(), forLoop) &&
+        (declaracao(forLoop) || (expressao(forLoop) && matchT("SEMICOLON", ";", forLoop)))) {
 
       // Handle condition with comparison operator
-      if (termo()) {
+      if (termo(forLoop)) {
         if (token != null && (token.getTipo().equals("GTR") ||
             token.getTipo().equals("LSS") ||
             token.getTipo().equals("EQL") ||
@@ -220,11 +240,11 @@ public class Parser {
             token.getTipo().equals("LEQ"))) {
           traduz(token.getLexema());
           token = getNextToken();
-          if (termo() &&
-              matchT("SEMICOLON", ";") &&
-              expressao() &&
-              matchT("RPAREN", token.getLexema()) &&
-              bloco()) {
+          if (termo(forLoop) &&
+              matchT("SEMICOLON", ";", forLoop) &&
+              expressao(forLoop) &&
+              matchT("RPAREN", token.getLexema(), forLoop) &&
+              bloco(forLoop)) {
             return true;
           }
         }
@@ -233,21 +253,23 @@ public class Parser {
     return false;
   }
 
-  private boolean expressao() {
-    if (atribuicao()) {
+  private boolean expressao(Node node) {
+    Node expressao = node.addNode("expressao");
+    if (atribuicao(expressao)) {
       return true;
-    } else if (expressaoComparativa()) {
+    } else if (expressaoComparativa(expressao)) {
       return true;
-    } else if (expressaoMatematica()) {
+    } else if (expressaoMatematica(expressao)) {
       return true;
     }
     return false;
   }
 
-  private boolean atribuicao() {
-    if (id()) {
-      if (operadorAtribuicao()) {
-        if (expressaoMatematica()) {
+  private boolean atribuicao(Node node) {
+    Node atribuicao = node.addNode("atribuicao");
+    if (id(atribuicao)) {
+      if (operadorAtribuicao(atribuicao)) {
+        if (expressaoMatematica(atribuicao)) {
           return true;
         }
       }
@@ -255,8 +277,9 @@ public class Parser {
     return false;
   }
 
-  private boolean expressaoMatematica() {
-    if (termo()) {
+  private boolean expressaoMatematica(Node node) {
+    Node expressaoMatematica = node.addNode("expressaoMatematica");
+    if (termo(expressaoMatematica)) {
       if (token != null && (token.getTipo().equals("ADD") ||
           token.getTipo().equals("SUB") ||
           token.getTipo().equals("MUL") ||
@@ -264,20 +287,22 @@ public class Parser {
           token.getTipo().equals("MOD"))) {
         traduz(token.getLexema());
         token = getNextToken();
-        return termo();
+        return termo(expressaoMatematica);
       }
       return true;
     }
     return false;
   }
 
-  private boolean termo() {
-    return id() || num();
+  private boolean termo(Node node) {
+    Node termo = node.addNode("termo");
+    return id(termo) || num(termo);
   }
 
-  private boolean matchT(String tipo, String lexema) {
+  private boolean matchT(String tipo, String lexema, Node node) {
     if (token.getTipo().equals(tipo)) {
       traduz(lexema);
+      node.addNode(lexema);
       token = getNextToken();
       return true;
     }
@@ -348,6 +373,21 @@ public class Parser {
         // For other tokens (like numbers), keep them as is
         System.out.print(" " + code + " ");
       }
+    }
+  }
+
+  private void printTree(Node node, int level) {
+    // Print indentation based on level
+    for (int i = 0; i < level; i++) {
+      System.out.print("  ");
+    }
+    
+    // Print the current node
+    System.out.println("|- " + node.toString());
+    
+    // Recursively print all child nodes
+    for (Node child : node.nodes) {
+      printTree(child, level + 1);
     }
   }
 }
