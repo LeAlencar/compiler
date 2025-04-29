@@ -171,7 +171,70 @@ public class Parser {
     return false;
   }
 
-  private void traduz(String code){
-    System.out.print(code);
-  }
+  private void traduz(String code) {
+    if (code.equals("se")) {
+      System.out.print("if");
+    } else if (code.equals("altrimenti")) {
+      System.out.print("else");
+    } else if (code.equals("intero")) {
+      System.out.print("int");
+    } else if (code.equals("stringa")) {
+      System.out.print("string");
+    } else if (code.equals("booleano")) {
+      System.out.print("boolean");
+    } else if (code.equals("mentre")) {
+      System.out.print("while");
+    } else if (code.equals("fare")) {
+      System.out.print("do");
+    } else if (code.equals("per")) {
+      System.out.print("for");
+    } else if (code.equals(";")) {
+      System.out.println(";");
+    } else if (code.equals("+=")) {
+      System.out.print(" += ");
+    } else if (code.equals("-=")) {
+      System.out.print(" -= ");
+    } else if (code.equals("*=")) {
+      System.out.print(" *= ");
+    } else if (code.equals("/=")) {
+      System.out.print(" /= ");
+    } else if (code.equals("%=")) {
+      System.out.print(" %= ");
+    } else if (code.equals("+")) {
+      System.out.print(" + ");
+    } else if (code.equals("-")) {
+      System.out.print(" - ");
+    } else if (code.equals("*")) {
+      System.out.print(" * ");
+    } else if (code.equals("/")) {
+      System.out.print(" / ");
+    } else if (code.equals("%")) {
+      System.out.print(" % ");
+    } else if (code.equals("==")) {
+      System.out.print(" == ");
+    } else if (code.equals("!=")) {
+      System.out.print(" != ");
+    } else if (code.equals(">=")) {
+      System.out.print(" >= ");
+    } else if (code.equals("<=")) {
+      System.out.print(" <= ");
+    } else if (code.equals(">")) {
+      System.out.print(" > ");
+    } else if (code.equals("<")) {
+      System.out.print(" < ");
+    } else if (code.equals("=")) {
+      System.out.print(" = ");
+    } else if (code.equals("(") || code.equals(")") ||
+        code.equals("{") || code.equals("}")) {
+      System.out.print(" " + code + " ");
+    } else {
+      // For identifiers starting with underscore, remove it
+      if (code.startsWith("_")) {
+        System.out.print(" " + code.substring(1) + " ");
+      } else {
+        // For other tokens (like numbers), keep them as is
+        System.out.print(" " + code + " ");
+      }
+    }
+}
 }
