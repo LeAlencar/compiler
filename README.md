@@ -1,64 +1,42 @@
-# JavaCompiler
-Java made compiler for the Compilers and OS class 
-
-
 # Gramática
-```javascript
-<main> ::= <statements> EOF
+funcao → **'funzione'** NOME '(' (declaracaoFuncao | ε) ')' bloco fermare
 
-<statements> ::= <statement> <statements>
-               | ε
+declaracaoFuncao → tipo ID | tipo ID ',' declaracaoFuncao
 
-<statement> ::= <declaracao>
-              | <ifelse>
-              | <whileLoop>
-              | <doWhileLoop>
-              | <forLoop>
-              | <expressao> ";"
+bloco → linha bloco | linha
 
-<declaracao> ::= <tipo> <id> <operadorAtribuicao> (<num> | <id>) ";"
+linha → escrever | ler | declaracao | ifelse | while | for | atribuicao
 
-<tipo> ::= "intero" | "stringa" | "booleano"
+escrever → **'carattere'** '<<' (TEXTO | '$' ID) ('.' ('$' ID | TEXTO))* ';'
 
-<ifelse> ::= "se" <condicao> <bloco> "altrimenti" <bloco>
+ler → **'leggere'** 'xD' TEXTO ID? ';'
 
-<whileLoop> ::= "mentre" "(" <termo> <operador> <termo> ")" <bloco>
+declaracao → tipo ID operadorAtribuicao (NUM | ID) ';'
 
-<doWhileLoop> ::= "fare" <bloco> "mentre" "(" <termo> <operador> <termo> ")" ";"
+ifelse → **'se'** condicao bloco (**'altrimenti'** bloco)?
 
-<forLoop> ::= "per" "(" (<declaracao> | (<expressao> ";")) <termo> <operador> <termo> ";" <expressao> ")" <bloco>
+while → **'mentre'** condicao bloco | **'fare'** bloco **'mentre'** condicao
 
-<bloco> ::= "{" {<statement>} "}"
-          | <statement>
+for → **'per'** '(' declaracao ';' condicao ';' atribuicao ')' bloco
 
-<condicao> ::= "(" <expressaoComparativa> ")"
-            | <expressaoComparativa>
+atribuicao → ID opAtribuicao (ID | NUM | TEXTO | expressao)
 
-<expressaoComparativa> ::= <termo> <operador> <termo>
-                         | <termo>
+expressao → (ID | NUM) opMat (ID | NUM | '(' expressao ')' | expressao)
 
-<operador> ::= ">" | "<" | "==" | "!=" | ">=" | "<="
+condicao → (ID | NUM) opRelacional (ID | NUM) | (ID | NUM) opRelacional (ID | NUM) (**'o'** | **'e'**) condicao | '(' (ID | NUM) opRelacional (ID | NUM) ')' | '(' (ID | NUM) opRelacional (ID | NUM) (**'o'** | **'e'**) condicao ')'
 
-<expressao> ::= <atribuicao>
-              | <expressaoComparativa>
-              | <expressaoMatematica>
+tipo → **'intero'** | **'galleggiante'** | **'stringa'** | **'booleano'**
 
-<atribuicao> ::= <id> <operadorAtribuicao> <expressaoMatematica>
+opRelacional → '>' | '<' | '==' | '!=' | '>=' | '<='
 
-<operadorAtribuicao> ::= "=" | "+=" | "-="
-                       | "*=" | "/=" | "%="
+opAtribuicao → '=' | '+=' | '-=' | '*=' | '/=' | '%='
 
-<expressaoMatematica> ::= <termo> <opMat> <termo>
-                        | <termo>
+opMat → '+' | '-' | '*' | '/' | '%'
 
-<opMat> ::= "+" | "-" | "*" | "/" | "%"
+ID → '_' (a-z | A-Z)+
 
-<termo> ::= <id> | <num>
+NOME → (a-z | A-Z)+
 
-<id> ::= "ID"
+NUM → (0-9)+
 
-<num> ::= "NUM"
-
-```
-
-
+TEXTO → '"' (0-9 | a-z | A-Z | ' ' )+ '"'
