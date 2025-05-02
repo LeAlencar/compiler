@@ -39,6 +39,9 @@ public class ReservedToken extends AFD {
             case ':':
                 code.next();
                 return new Token("COLON", ":");
+            case '$':
+                code.next();
+                return new Token("IDWRITE", "$");
                 
             case '=':
                 code.next();
@@ -53,6 +56,10 @@ public class ReservedToken extends AFD {
                 if (code.current() == '=') {
                     code.next();
                     return new Token("LEQ", "<=");
+                }
+                if (code.current() == '<') {
+                    code.next();
+                    return new Token("WRITECHAR", "<<");
                 }
                 return new Token("LSS", "<");
                 
@@ -90,13 +97,18 @@ public class ReservedToken extends AFD {
             return new Token("WHILE", "mentre");
         } else if (current == 'f' && checkWord(code, "fare")) {
             return new Token("DO", "fare");
-        }
-        else if (current == 'i' && checkWord(code, "intero")) {
+        } else if (current == 'i' && checkWord(code, "intero")) {
             return new Token("TYPE_INT", "intero");
         } else if (current == 's' && checkWord(code, "stringa")) {
             return new Token("TYPE_STRING", "stringa");
         } else if (current == 'b' && checkWord(code, "booleano")) {
             return new Token("TYPE_BOOL", "booleano");
+        } else if (current == 'l' && checkWord(code, "leggere")) {
+            return new Token("READ", "leggere");
+        } else if (current == 'c' && checkWord(code, "carattere")) {
+            return new Token("WRITE", "carattere");
+        } else if (current == 'x' && checkWord(code, "xD")) {
+            return new Token("READCARACTER", "xD");
         }
       
         return null;

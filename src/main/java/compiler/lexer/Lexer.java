@@ -19,6 +19,7 @@ public class Lexer {
         afds.add(new Number());
         afds.add(new MathOperator());
         afds.add(new ID());
+        afds.add(new Texto());
     }
     
     public void skipWhiteSpace() {

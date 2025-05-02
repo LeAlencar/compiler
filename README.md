@@ -5,23 +5,25 @@ declaracaoFuncao → tipo ID | tipo ID ',' declaracaoFuncao
 
 bloco → linha bloco | linha
 
-linha → escrever | ler | declaracao | ifelse | while | for | atribuicao
+linha → escrever | ler | declaracao ';' | ifelse | while | for | atribuicao ';'
 
 escrever → **'carattere'** '<<' (TEXTO | '$' ID) ('.' ('$' ID | TEXTO))* ';'
 
 ler → **'leggere'** 'xD' TEXTO ID? ';'
 
-declaracao → tipo ID operadorAtribuicao (NUM | ID) ';'
+declaracao → tipo ID operadorAtribuicao expressao
 
-ifelse → **'se'** condicao bloco (**'altrimenti'** bloco)?
+ifelse → **'se'** condicao '{' bloco '}' (**'altrimenti'** '{' bloco '}')?
 
-while → **'mentre'** condicao bloco | **'fare'** bloco **'mentre'** condicao
+while → **'mentre'** condicao bloco | **'fare'** bloco **'mentre'** condicao ';'
 
-for → **'per'** '(' declaracao ';' condicao ';' atribuicao ')' bloco
+for → **'per'** '(' declaracao ';' condicao ';' atribuicao ';' ')' bloco
 
-atribuicao → ID opAtribuicao (ID | NUM | TEXTO | expressao)
+atribuicao → ID opAtribuicao expressao
 
-expressao → (ID | NUM) opMat (ID | NUM | '(' expressao ')' | expressao)
+expressao → fator (opMat fator)?
+
+fator → ID | NUM | '(' expressao ')'
 
 condicao → (ID | NUM) opRelacional (ID | NUM) | (ID | NUM) opRelacional (ID | NUM) (**'o'** | **'e'**) condicao | '(' (ID | NUM) opRelacional (ID | NUM) ')' | '(' (ID | NUM) opRelacional (ID | NUM) (**'o'** | **'e'**) condicao ')'
 
