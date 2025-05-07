@@ -25,6 +25,9 @@ public class Server {
                     Socket clientSocket = serverSocket.accept();
                     handleClient(clientSocket);
                     System.out.println("Cliente conectado: " + clientSocket.getInetAddress());
+                    System.out.println("Porta do cliente: " + clientSocket.getPort());
+                    
+                    
 
                 } catch (IOException e) {
                     if (running) {
@@ -45,6 +48,7 @@ public class Server {
             ) {
                 String sourceCode = in.readLine();
                 if (sourceCode != null) {
+                    System.out.println("Código recebido do cliente: " + sourceCode);
                     String result = compilerService.compile(sourceCode);
                     out.println(result);
                 }
