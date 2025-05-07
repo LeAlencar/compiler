@@ -24,6 +24,8 @@ public class Server {
                 try {
                     Socket clientSocket = serverSocket.accept();
                     handleClient(clientSocket);
+                    System.out.println("Cliente conectado: " + clientSocket.getInetAddress());
+
                 } catch (IOException e) {
                     if (running) {
                         System.err.println("Erro ao aceitar conexão: " + e.getMessage());
@@ -71,7 +73,7 @@ public class Server {
                 System.err.println("Porta inválida. Usando porta padrão 8080.");
             }
         }
-
+        
         Server server = new Server(port);
         server.start();
     }

@@ -20,7 +20,7 @@ public class Client {
             out.println(sourceCode);
             return in.readLine();
         } catch (IOException e) {
-            return "ERROR: Erro de conexão - " + e.getMessage();
+            return "ERRO: Erro de conexão - " + e.getMessage();
         }
     }
 
@@ -42,8 +42,7 @@ public class Client {
         Client client = new Client(host, port);
         
         // Exemplo de código para compilar
-        String sourceCode = "stringa _s = \"Hello, World!\";" +
-                          "carattere << $_s;";
+        String sourceCode = "intero _x = 10 intero _y = 5 _x = _x @ _y";
         
         String result = client.compile(sourceCode);
         System.out.println("Resultado da compilação: " + result);
