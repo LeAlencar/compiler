@@ -1,4 +1,4 @@
-package compiler.server;
+package compiler.server.tcpIp;
 
 import java.io.*;
 import java.net.Socket;
@@ -20,7 +20,21 @@ public class Client {
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             
             out.println(data);
-            return in.readLine();
+            String response = in.readLine();
+            
+            if (response == null) {
+                return "ERRO: Nenhuma resposta recebida do servidor";
+            }
+            
+            if (response.startsWith("ERRO")) {
+                return response;
+            }
+            
+            if (!response.equals("SUCCESSO")) {
+                return "ERRO: Resposta inesperada do servidor: " + response;
+            }
+            
+            return response;
         } catch (IOException e) {
             return "ERRO: Erro de conexão - " + e.getMessage();
         }
@@ -44,7 +58,7 @@ public class Client {
         Client client = new Client(host, port);
         
         // Exemplo de código para compilar
-        String data = "intero _x = 10; intero _y = 5; _x = _x - _y";
+        String data = "intero _x = 10 intero _y = 5 _x = _x - _y";
         
         String result = client.compile(data);
         System.out.println("Resultado da compilação: " + result);

@@ -1,4 +1,4 @@
-package compiler.server;
+package compiler.server.tcpIp;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -68,7 +68,7 @@ public class Server {
         running = false;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException{
         int port = 8080; 
         if (args.length > 0) {
             try {
