@@ -30,9 +30,11 @@ public class CompilerService {
             System.out.flush();
             System.setOut(oldOut);
             
-            return "SUCCESS:" + outputStream.toString();
+           System.out.println(outputStream.toString());
+            
+            return "SUCCESSO";
         } catch (Exception e) {
-            return "ERROR:" + e.getMessage();
+            return "ERRO" + e.getMessage();
         }
     }
 } 

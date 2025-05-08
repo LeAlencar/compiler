@@ -3,21 +3,23 @@ package compiler.server;
 import java.io.*;
 import java.net.Socket;
 
+
 public class Client {
     private final String host;
     private final int port;
+    
 
     public Client(String host, int port) {
         this.host = host;
         this.port = port;
     }
 
-    public String compile(String sourceCode) {
+    public String compile(String data) {
         try (Socket socket = new Socket(host, port);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             
-            out.println(sourceCode);
+            out.println(data);
             return in.readLine();
         } catch (IOException e) {
             return "ERRO: Erro de conexão - " + e.getMessage();
@@ -42,9 +44,9 @@ public class Client {
         Client client = new Client(host, port);
         
         // Exemplo de código para compilar
-        String sourceCode = "intero _x = 10 intero _y = 5 _x = _x @ _y";
+        String data = "intero _x = 10; intero _y = 5; _x = _x - _y";
         
-        String result = client.compile(sourceCode);
+        String result = client.compile(data);
         System.out.println("Resultado da compilação: " + result);
     }
 } 
