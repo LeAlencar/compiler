@@ -1,3 +1,4 @@
+compiler/lexer/Texto.class
 compiler/parser/Parser.class
 compiler/parser/Node.class
 compiler/lexer/Lexer.class

@@ -1,4 +1,5 @@
 # Gramática
+
 funcao → **'funzione'** NOME '(' (declaracaoFuncao | ε) ')' bloco fermare
 
 declaracaoFuncao → tipo ID | tipo ID ',' declaracaoFuncao
@@ -7,7 +8,7 @@ bloco → linha bloco | linha
 
 linha → escrever | ler | declaracao ';' | ifelse | while | for | atribuicao ';'
 
-escrever → **'carattere'** '<<' (TEXTO | '$' ID) ('.' ('$' ID | TEXTO))* ';'
+escrever → **'carattere'** '<<' (TEXTO | '\$' ID) ('.' ('$' ID | TEXTO))\* ';'
 
 ler → **'leggere'** 'xD' TEXTO ID? ';'
 
@@ -31,14 +32,23 @@ tipo → **'intero'** | **'galleggiante'** | **'stringa'** | **'booleano'**
 
 opRelacional → '>' | '<' | '==' | '!=' | '>=' | '<='
 
-opAtribuicao → '=' | '+=' | '-=' | '*=' | '/=' | '%='
+opAtribuicao → '=' | '+=' | '-=' | '\*=' | '/=' | '%='
 
-opMat → '+' | '-' | '*' | '/' | '%'
+opMat → '+' | '-' | '\*' | '/' | '%'
 
-ID → '_' (a-z | A-Z)+
+ID → '\_' (a-z | A-Z)+
 
 NOME → (a-z | A-Z)+
 
 NUM → (0-9)+
 
 TEXTO → '"' (0-9 | a-z | A-Z | ' ' )+ '"'
+
+````
+stringa _s = \"Hello, World!\";" +
+      "carattere << $_s;intero _x = 10;" +
+        "se _x == 10 {leggere xD \"Escreva seu nome\" _leitura;_x=1;}" +
+        "fare {_x = _x + 1;} mentre _x < 15;" +
+        "per (intero _i = 0; _i < 10; _i += 1;) {_x = _x * 2;}
+        ```
+````
