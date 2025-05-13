@@ -1,4 +1,5 @@
 # Gramática
+
 funcao → **'funzione'** NOME '(' (declaracaoFuncao | ε) ')' bloco fermare
 
 declaracaoFuncao → tipo ID | tipo ID ',' declaracaoFuncao
@@ -7,7 +8,7 @@ bloco → linha bloco | linha
 
 linha → escrever | ler | declaracao ';' | ifelse | while | for | atribuicao ';'
 
-escrever → **'carattere'** '<<' (TEXTO | '$' ID) ('.' ('$' ID | TEXTO))* ';'
+escrever → **'carattere'** '<<' (TEXTO | '$' ID) ('.' ('$' ID | TEXTO))\* ';'
 
 ler → **'leggere'** 'xD' TEXTO ID? ';'
 
@@ -31,11 +32,11 @@ tipo → **'intero'** | **'galleggiante'** | **'stringa'** | **'booleano'**
 
 opRelacional → '>' | '<' | '==' | '!=' | '>=' | '<='
 
-opAtribuicao → '=' | '+=' | '-=' | '*=' | '/=' | '%='
+opAtribuicao → '=' | '+=' | '-=' | '\*=' | '/=' | '%='
 
-opMat → '+' | '-' | '*' | '/' | '%'
+opMat → '+' | '-' | '\*' | '/' | '%'
 
-ID → '_' (a-z | A-Z)+
+ID → '\_' (a-z | A-Z)+
 
 NOME → (a-z | A-Z)+
 
@@ -59,37 +60,45 @@ Este projeto implementa um compilador como um servidor web que recebe código pa
 
 1. Clone o repositório
 2. Na pasta do projeto, execute:
+
 ```bash
 mvn spring-boot:run
 ```
+
 3. O servidor iniciará na porta 8080
 
 ## Endpoints Disponíveis
 
 ### Verificar Status do Servidor
+
 ```
 GET http://localhost:8080/api/compiler/health
 ```
+
 Resposta esperada:
+
 ```json
 {
-    "status": "Server Rodando"
+  "status": "Server Rodando"
 }
 ```
 
 ### Compilar Código
+
 ```
 POST http://localhost:8080/api/compiler/compile
 ```
 
 Corpo da requisição (JSON):
+
 ```json
 {
-    "code": "stringa _s = \"Hello, World!\"; carattere << $_s;"
+  "code": "stringa _s = \"Hello, World!\"; carattere << $_s;"
 }
 ```
 
 Resposta de sucesso:
+
 ```json
 {
     "Compilado com Sucesso": true,
@@ -99,11 +108,12 @@ Resposta de sucesso:
 ```
 
 Resposta de erro:
+
 ```json
 {
-    "Compilado com Sucesso": false,
-    "erro": "mensagem de erro",
-    "Código Inválido": "código que causou o erro"
+  "Compilado com Sucesso": false,
+  "erro": "mensagem de erro",
+  "Código Inválido": "código que causou o erro"
 }
 ```
 
@@ -116,4 +126,3 @@ Resposta de erro:
    - Escolha "JSON" no dropdown
    - Cole o JSON com o código a ser compilado
 4. Envie a requisição
-
