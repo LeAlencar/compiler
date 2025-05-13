@@ -22,12 +22,15 @@ public class CompilerServer {
         SpringApplication.run(CompilerServer.class, args);
     }
 
-    @GetMapping("/health")
-    public Map<String, String> healthCheck() {
-        Map<String, String> response = new HashMap<>();
-        response.put("status", "Server Rodando");
-        return response;
-    }
+
+    /*
+     * @GetMapping("/health")
+     * public Map<String, String> healthCheck() {
+     * Map<String, String> response = new HashMap<>();
+     * response.put("status", "Server Rodando");
+     * return response;
+     * }
+     */
 
     @PostMapping("/compile")
     public Map<String, Object> compileCode(@RequestBody Map<String, String> request) {
@@ -41,17 +44,16 @@ public class CompilerServer {
 
             // Análise sintática
             Parser parser = new Parser(tokens);
-            
             // Captura a saída do System.out
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             PrintStream originalOut = System.out;
             System.setOut(new PrintStream(outputStream));
             
             parser.main();
-            
+           
             // Restaura o System.out original
             System.setOut(originalOut);
-            
+
             String result = outputStream.toString();
 
             response.put("Compilado com Sucesso", true);

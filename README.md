@@ -24,7 +24,7 @@ atribuicao → ID opAtribuicao expressao
 
 expressao → fator (opMat fator)?
 
-fator → ID | NUM | '(' expressao ')'
+fator → ID | NUM | TEXTO | '(' expressao ')'
 
 condicao → (ID | NUM) opRelacional (ID | NUM) | (ID | NUM) opRelacional (ID | NUM) (**'o'** | **'e'**) condicao | '(' (ID | NUM) opRelacional (ID | NUM) ')' | '(' (ID | NUM) opRelacional (ID | NUM) (**'o'** | **'e'**) condicao ')'
 
@@ -43,6 +43,15 @@ NOME → (a-z | A-Z)+
 NUM → (0-9)+
 
 TEXTO → '"' (0-9 | a-z | A-Z | ' ' )+ '"'
+
+````
+stringa _s = \"Hello, World!\";" +
+      "carattere << $_s;intero _x = 10;" +
+        "se _x == 10 {leggere xD \"Escreva seu nome\" _leitura;_x=1;}" +
+        "fare {_x = _x + 1;} mentre _x < 15;" +
+        "per (intero _i = 0; _i < 10; _i += 1;) {_x = _x * 2;}
+        ```
+````
 
 # Server
 
@@ -126,3 +135,4 @@ Resposta de erro:
    - Escolha "JSON" no dropdown
    - Cole o JSON com o código a ser compilado
 4. Envie a requisição
+
