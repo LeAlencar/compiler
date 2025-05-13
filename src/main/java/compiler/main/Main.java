@@ -40,5 +40,6 @@ public class Main {
         System.out.println("\nIniciando análise sintática:");
         Parser parser = new Parser(tokens);
         parser.main();
+        System.out.println("\nSintaticamente correta\n");
     }
 }

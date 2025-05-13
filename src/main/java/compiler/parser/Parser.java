@@ -40,7 +40,7 @@ public class Parser {
     if (bloco(root)) {
       if (token.getTipo().equals("EOF")) {
         System.out.println("}");
-        System.out.println("\nSintaticamente correta\n");
+
         // tree.preOrder();
         // tree.printCode();
         // tree.printTree();
