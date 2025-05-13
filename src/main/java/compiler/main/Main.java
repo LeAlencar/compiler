@@ -18,27 +18,29 @@ public class Main {
         // 2;}";
         // String data = "intero _x = 10; intero _y = 5; intero _z = _x * _y;";
 
+        String data = "stringa _s = \"Hello, World!\"; carattere << _s;";
         /*
-         * String data = "stringa _s = \"Hello, World!\";" +
          * "carattere << $_s;intero _x = 10;" +
          * "se _x == 10 {leggere xD \"Escreva seu nome\" _leitura;_x=1;}" +
          * "fare {_x = _x + 1;} mentre _x < 15;" +
          * "per (intero _i = 0; _i < 10; _i += 1;) {_x = _x * 2;}";
          */
 
-        String data = "intero _x = 10; " +
-                "intero _y = 5; " +
-                "se (_x > _y) { " +
-                "    _x = _x + _y; " +
-                "    carattere << _x; " +
-                "} altrimenti { " +
-                "    _y = _y + _x; " +
-                "    carattere << _y; " +
-                "} " +
-                "per (intero _i = 0; _i < 3; _i += 1) { " +
-                "    _x = _x * 2; " +
-                "    carattere << _x; " +
-                "}";
+        /*
+         * String data = "intero _x = 10; " +
+         * "intero _y = 5; " +
+         * "se (_x > _y) { " +
+         * "    _x = _x + _y; " +
+         * "    carattere << _x; " +
+         * "} altrimenti { " +
+         * "    _y = _y + _x; " +
+         * "    carattere << _y; " +
+         * "} " +
+         * "per (intero _i = 0; _i < 3; _i += 1) { " +
+         * "    _x = _x * 2; " +
+         * "    carattere << _x; " +
+         * "}";
+         */
 
         try {
             // Análise léxica

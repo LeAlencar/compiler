@@ -162,6 +162,7 @@ public class Parser {
   // ESCREVER
   // --------------------------------------------------------------------------------------------------------------------------------------------
   private boolean escrever(Node node) {
+    System.out.println("escrever " + token.getLexema());
     Node escrever = new Node("escrever");
     if (matchL("carattere", token.getLexema(), escrever) &&
         matchL("<<", token.getLexema(), escrever)) {
@@ -170,6 +171,10 @@ public class Parser {
         matchT("TEXTO", token.getLexema(), escrever);
       } else {
         matchL("$", token.getLexema(), escrever);
+        if (token.getTipo().equals("ID")) {
+          String varName = token.getLexema().substring(1); // Remove o underscore inicial
+          usedVariables.add(varName);
+        }
         matchT("ID", token.getLexema(), escrever);
       }
 
@@ -177,6 +182,10 @@ public class Parser {
         matchL(".", token.getLexema(), escrever);
         if (token.getTipo().equals("$")) {
           matchL("$", token.getLexema(), escrever);
+          if (token.getTipo().equals("ID")) {
+            String varName = token.getLexema().substring(1); // Remove o underscore inicial
+            usedVariables.add(varName);
+          }
           matchT("ID", token.getLexema(), escrever);
         } else {
           matchT("TEXTO", token.getLexema(), escrever);
