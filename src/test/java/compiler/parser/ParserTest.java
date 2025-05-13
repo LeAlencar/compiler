@@ -22,14 +22,14 @@ public class ParserTest {
     void testSimpleVariableDeclaration() {
         // int x = 10;
         tokens.add(new Token("TYPE_INT", "intero"));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("ASSIGN", "="));
         tokens.add(new Token("NUM", "10"));
         tokens.add(new Token("SEMICOLON", ";"));
         tokens.add(new Token("EOF", "EOF"));
 
         parser = new Parser(tokens);
-        assertDoesNotThrow(() -> parser.main());
+        assertDoesNotThrow(() -> parser.parse());
     }
 
     // Test Case 2: Invalid Variable Declaration
@@ -37,13 +37,13 @@ public class ParserTest {
     void testInvalidVariableDeclaration() {
         // int x = ; (missing value)
         tokens.add(new Token("TYPE_INT", "intero"));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("ASSIGN", "="));
         tokens.add(new Token("SEMICOLON", ";"));
         tokens.add(new Token("EOF", "EOF"));
 
         parser = new Parser(tokens);
-        assertThrows(RuntimeException.class, () -> parser.main());
+        assertThrows(RuntimeException.class, () -> parser.parse());
     }
 
     // Test Case 3: Simple If-Else Statement
@@ -52,19 +52,19 @@ public class ParserTest {
         // if (x > 0) { x = 1; } else { x = 2; }
         tokens.add(new Token("IF", "se"));
         tokens.add(new Token("LPAREN", "("));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("GTR", ">"));
         tokens.add(new Token("NUM", "0"));
         tokens.add(new Token("RPAREN", ")"));
         tokens.add(new Token("LBRACE", "{"));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("ASSIGN", "="));
         tokens.add(new Token("NUM", "1"));
         tokens.add(new Token("SEMICOLON", ";"));
         tokens.add(new Token("RBRACE", "}"));
         tokens.add(new Token("ELSE", "altrimenti"));
         tokens.add(new Token("LBRACE", "{"));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("ASSIGN", "="));
         tokens.add(new Token("NUM", "2"));
         tokens.add(new Token("SEMICOLON", ";"));
@@ -72,7 +72,7 @@ public class ParserTest {
         tokens.add(new Token("EOF", "EOF"));
 
         parser = new Parser(tokens);
-        assertDoesNotThrow(() -> parser.main());
+        assertDoesNotThrow(() -> parser.parse());
     }
 
     // Test Case 4: While Loop
@@ -81,12 +81,12 @@ public class ParserTest {
         // while (x > 0) { x -= 1; }
         tokens.add(new Token("WHILE", "mentre"));
         tokens.add(new Token("LPAREN", "("));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("GTR", ">"));
         tokens.add(new Token("NUM", "0"));
         tokens.add(new Token("RPAREN", ")"));
         tokens.add(new Token("LBRACE", "{"));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("SUB_ASSIGN", "-="));
         tokens.add(new Token("NUM", "1"));
         tokens.add(new Token("SEMICOLON", ";"));
@@ -94,7 +94,7 @@ public class ParserTest {
         tokens.add(new Token("EOF", "EOF"));
 
         parser = new Parser(tokens);
-        assertDoesNotThrow(() -> parser.main());
+        assertDoesNotThrow(() -> parser.parse());
     }
 
     // Test Case 5: For Loop
@@ -104,20 +104,20 @@ public class ParserTest {
         tokens.add(new Token("FOR", "per"));
         tokens.add(new Token("LPAREN", "("));
         tokens.add(new Token("TYPE_INT", "intero"));
-        tokens.add(new Token("ID", "i"));
+        tokens.add(new Token("ID", "_i"));
         tokens.add(new Token("ASSIGN", "="));
         tokens.add(new Token("NUM", "0"));
         tokens.add(new Token("SEMICOLON", ";"));
-        tokens.add(new Token("ID", "i"));
+        tokens.add(new Token("ID", "_i"));
         tokens.add(new Token("LSS", "<"));
         tokens.add(new Token("NUM", "10"));
         tokens.add(new Token("SEMICOLON", ";"));
-        tokens.add(new Token("ID", "i"));
+        tokens.add(new Token("ID", "_i"));
         tokens.add(new Token("ADD_ASSIGN", "+="));
         tokens.add(new Token("NUM", "1"));
         tokens.add(new Token("RPAREN", ")"));
         tokens.add(new Token("LBRACE", "{"));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("ASSIGN", "="));
         tokens.add(new Token("NUM", "2"));
         tokens.add(new Token("SEMICOLON", ";"));
@@ -125,7 +125,7 @@ public class ParserTest {
         tokens.add(new Token("EOF", "EOF"));
 
         parser = new Parser(tokens);
-        assertDoesNotThrow(() -> parser.main());
+        assertDoesNotThrow(() -> parser.parse());
     }
 
     // Test Case 6: Do-While Loop
@@ -134,14 +134,14 @@ public class ParserTest {
         // do { x = 2; } while (x < 100);
         tokens.add(new Token("DO", "fare"));
         tokens.add(new Token("LBRACE", "{"));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("ASSIGN", "="));
         tokens.add(new Token("NUM", "2"));
         tokens.add(new Token("SEMICOLON", ";"));
         tokens.add(new Token("RBRACE", "}"));
         tokens.add(new Token("WHILE", "mentre"));
         tokens.add(new Token("LPAREN", "("));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("LSS", "<"));
         tokens.add(new Token("NUM", "100"));
         tokens.add(new Token("RPAREN", ")"));
@@ -149,16 +149,16 @@ public class ParserTest {
         tokens.add(new Token("EOF", "EOF"));
 
         parser = new Parser(tokens);
-        assertDoesNotThrow(() -> parser.main());
+        assertDoesNotThrow(() -> parser.parse());
     }
 
     // Test Case 7: Complex Mathematical Expression
     @Test
     void testComplexMathematicalExpression() {
         // x = x + 2 * 3;
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("ASSIGN", "="));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("ADD", "+"));
         tokens.add(new Token("NUM", "2"));
         tokens.add(new Token("MUL", "*"));
@@ -167,7 +167,7 @@ public class ParserTest {
         tokens.add(new Token("EOF", "EOF"));
 
         parser = new Parser(tokens);
-        assertDoesNotThrow(() -> parser.main());
+        assertDoesNotThrow(() -> parser.parse());
     }
 
     // Test Case 8: Nested Control Structures
@@ -176,19 +176,19 @@ public class ParserTest {
         // if (x > 0) { while (y < 10) { y += 1; } }
         tokens.add(new Token("IF", "se"));
         tokens.add(new Token("LPAREN", "("));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("GTR", ">"));
         tokens.add(new Token("NUM", "0"));
         tokens.add(new Token("RPAREN", ")"));
         tokens.add(new Token("LBRACE", "{"));
         tokens.add(new Token("WHILE", "mentre"));
         tokens.add(new Token("LPAREN", "("));
-        tokens.add(new Token("ID", "y"));
+        tokens.add(new Token("ID", "_y"));
         tokens.add(new Token("LSS", "<"));
         tokens.add(new Token("NUM", "10"));
         tokens.add(new Token("RPAREN", ")"));
         tokens.add(new Token("LBRACE", "{"));
-        tokens.add(new Token("ID", "y"));
+        tokens.add(new Token("ID", "_y"));
         tokens.add(new Token("ADD_ASSIGN", "+="));
         tokens.add(new Token("NUM", "1"));
         tokens.add(new Token("SEMICOLON", ";"));
@@ -197,7 +197,7 @@ public class ParserTest {
         tokens.add(new Token("EOF", "EOF"));
 
         parser = new Parser(tokens);
-        assertDoesNotThrow(() -> parser.main());
+        assertDoesNotThrow(() -> parser.parse());
     }
 
     // Test Case 9: Invalid Syntax - Missing Semicolon
@@ -205,13 +205,13 @@ public class ParserTest {
     void testMissingSemicolon() {
         // int x = 10 (missing semicolon)
         tokens.add(new Token("TYPE_INT", "intero"));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("ASSIGN", "="));
         tokens.add(new Token("NUM", "10"));
         tokens.add(new Token("EOF", "EOF"));
 
         parser = new Parser(tokens);
-        assertThrows(RuntimeException.class, () -> parser.main());
+        assertThrows(RuntimeException.class, () -> parser.parse());
     }
 
     // Test Case 10: Invalid Syntax - Mismatched Braces
@@ -220,18 +220,18 @@ public class ParserTest {
         // if (x > 0) { x = 1; (missing closing brace)
         tokens.add(new Token("IF", "se"));
         tokens.add(new Token("LPAREN", "("));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("GTR", ">"));
         tokens.add(new Token("NUM", "0"));
         tokens.add(new Token("RPAREN", ")"));
         tokens.add(new Token("LBRACE", "{"));
-        tokens.add(new Token("ID", "x"));
+        tokens.add(new Token("ID", "_x"));
         tokens.add(new Token("ASSIGN", "="));
         tokens.add(new Token("NUM", "1"));
         tokens.add(new Token("SEMICOLON", ";"));
         tokens.add(new Token("EOF", "EOF"));
 
         parser = new Parser(tokens);
-        assertThrows(RuntimeException.class, () -> parser.main());
+        assertThrows(RuntimeException.class, () -> parser.parse());
     }
-} 
+}

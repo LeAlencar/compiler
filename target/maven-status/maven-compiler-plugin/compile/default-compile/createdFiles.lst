@@ -8,6 +8,7 @@ compiler/lexer/ID.class
 compiler/lexer/AFD.class
 compiler/server/CompilerServer.class
 compiler/lexer/Lexer.class
+compiler/generator/GoFileGenerator.class
 compiler/lexer/Token.class
 compiler/lexer/ReservedToken.class
 compiler/semantic/Symbol.class

@@ -1,8 +1,13 @@
 package compiler.parser;
 
 import compiler.lexer.Token;
+import compiler.semantic.SymbolTable;
+import compiler.semantic.SemanticException;
+import compiler.semantic.Symbol;
 
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Parser {
 
@@ -16,38 +21,81 @@ public class Parser {
   private boolean isMentre = false;
   private boolean isPer = false;
   private int semicolons = 0;
+  private SymbolTable symbolTable;
+  private Set<String> usedVariables;
+  private Set<String> declaredVariables;
+  private StringBuilder generatedCode;
+  private boolean isElseComing = false;
 
   public Parser(List<Token> tokens) {
     this.tokens = tokens;
     this.currentTokenIndex = 0;
+    this.symbolTable = new SymbolTable();
+    this.usedVariables = new HashSet<>();
+    this.declaredVariables = new HashSet<>();
+    this.generatedCode = new StringBuilder();
   }
 
-  public void main() {
+  public String parse() {
     token = getNextToken();
     Node root = new Node("main");
     Tree tree = new Tree(root);
 
-    System.out.println("package main");
-    System.out.println("import (");
-    System.out.println("\"fmt\"");
-    System.out.println(")");
-    System.out.println("func main() {");
+    appendCode("package main\n");
+    appendCode("import (\n");
+    appendCode("\t\"fmt\"\n");
+    appendCode(")\n\n");
+    appendCode("func main() {\n");
+
+    // Track if we're at the start of a new line for indentation
+    boolean isNewLine = true;
+    boolean isFirstDeclaration = true;
 
     loop(root, tree);
+
+    // Verificação semântica de variáveis não utilizadas
+    try {
+      Set<String> allVariables = symbolTable.getAllVariableNames();
+      Set<String> unusedVars = new HashSet<>();
+
+      for (String var : allVariables) {
+        if (!usedVariables.contains(var)) {
+          unusedVars.add(var);
+        }
+      }
+
+      // Se houver variáveis não utilizadas, lança exceção
+      if (!unusedVars.isEmpty()) {
+        StringBuilder errorMsg = new StringBuilder("Erro de compilação: variáveis declaradas mas não utilizadas:\n");
+        for (String var : unusedVars) {
+          errorMsg.append("  - ").append(var).append("\n");
+        }
+        throw new SemanticException(errorMsg.toString());
+      }
+
+      // If we reach here, compilation was successful
+      appendCode("}\n");
+      System.out.println("\nCódigo compilado com sucesso! Análise sintática e semântica OK.");
+      return generatedCode.toString();
+
+    } catch (SemanticException e) {
+      System.err.println(e.getMessage());
+      System.err.println("\nCompilação falhou devido a erros semânticos.\n");
+      throw new RuntimeException("Compilação interrompida devido a erros semânticos");
+    }
+  }
+
+  private void appendCode(String code) {
+    generatedCode.append(code);
   }
 
   public void loop(Node root, Tree tree) {
-    if (bloco(root)) {
-      if (token.getTipo().equals("EOF")) {
-        System.out.println("}");
+    if (token == null || token.getTipo().equals("EOF")) {
+      return;
+    }
 
-        // tree.preOrder();
-        // tree.printCode();
-        // tree.printTree();
-        return;
-      } else {
-        loop(root, tree);
-      }
+    if (bloco(root)) {
+      loop(root, tree);
     } else {
       erro();
     }
@@ -61,7 +109,7 @@ public class Parser {
   }
 
   private void erro() {
-    System.out.println("\ntoken inválido: " + token.getLexema());
+    appendCode("\ntoken inválido: " + token.getLexema() + "\n");
   }
 
   // BLOCO
@@ -147,18 +195,60 @@ public class Parser {
   // --------------------------------------------------------------------------------------------------------------------------------------------
   private boolean declaracao(Node node) {
     Node declaracao = new Node("declaracao");
-    if ((matchL("intero", token.getLexema(), declaracao) ||
-        matchL("stringa", token.getLexema(), declaracao) ||
-        matchL("booleano", token.getLexema(), declaracao)) &&
-        matchT("ID", token.getLexema(), declaracao) &&
-        operadorAtribuicao(declaracao)) {
+    String type = "";
+    String varName = "";
 
-      if (expressao(declaracao)) {
-        node.addNode(declaracao);
-        return true;
-      }
+    // Captura o tipo
+    if (token.getLexema().equals("intero")) {
+      type = "int"; // Convertendo para o tipo Go correspondente
+      if (!matchL("intero", token.getLexema(), declaracao))
+        return false;
+    } else if (token.getLexema().equals("stringa")) {
+      type = "string"; // Convertendo para o tipo Go correspondente
+      if (!matchL("stringa", token.getLexema(), declaracao))
+        return false;
+    } else if (token.getLexema().equals("booleano")) {
+      type = "bool"; // Convertendo para o tipo Go correspondente
+      if (!matchL("booleano", token.getLexema(), declaracao))
+        return false;
+    } else {
+      return false;
     }
-    return false;
+
+    // Captura o nome da variável
+    if (token.getTipo().equals("ID")) {
+      varName = token.getLexema().substring(1); // Remove o underscore inicial
+      if (!matchT("ID", token.getLexema(), declaracao))
+        return false;
+    } else {
+      return false;
+    }
+
+    try {
+      symbolTable.insert(varName, type);
+
+      if (!operadorAtribuicao(declaracao))
+        return false;
+
+      if (!expressao(declaracao))
+        return false;
+
+      // Marca a variável como inicializada após a expressão
+      Symbol symbol = symbolTable.lookup(varName);
+      symbol.setInitialized(true);
+
+      // Se estamos dentro de um loop 'per', marca a variável como usada
+      // automaticamente
+      if (isPer) {
+        usedVariables.add(varName);
+      }
+
+      node.addNode(declaracao);
+      return true;
+    } catch (SemanticException e) {
+      appendCode("Erro semântico: " + e.getMessage() + "\n");
+      return false;
+    }
   }
 
   // EXPRESSÃO
@@ -181,13 +271,38 @@ public class Parser {
 
   private boolean fator(Node node) {
     Node fator = new Node("fator");
-    if (matchT("ID", token.getLexema(), fator) ||
-        matchT("NUM", token.getLexema(), fator) ||
-        matchT("TEXTO", token.getLexema(), fator) ||
-        (matchL("(", token.getLexema(), fator) && expressao(fator) && matchL(")", token.getLexema(), fator))) {
+    try {
+      if (token.getTipo().equals("ID")) {
+        String varName = token.getLexema().substring(1); // Remove o underscore inicial
+        Symbol symbol = symbolTable.lookup(varName);
+
+        // Verifica se a variável foi inicializada
+        if (!symbol.isInitialized()) {
+          throw new SemanticException("Erro: variável '" + varName + "' está sendo usada sem ter sido inicializada");
+        }
+
+        // Marca a variável como usada
+        usedVariables.add(varName);
+
+        if (!matchT("ID", token.getLexema(), fator))
+          return false;
+      } else if (token.getTipo().equals("NUM")) {
+        if (!matchT("NUM", token.getLexema(), fator))
+          return false;
+      } else if (token.getTipo().equals("TEXTO")) {
+        if (!matchT("TEXTO", token.getLexema(), fator))
+          return false;
+      } else if (matchL("(", token.getLexema(), fator)) {
+        if (!expressao(fator) || !matchL(")", token.getLexema(), fator))
+          return false;
+      } else {
+        return false;
+      }
+
       node.addNode(fator);
       return true;
-    } else {
+    } catch (SemanticException e) {
+      System.err.println("Erro semântico: " + e.getMessage());
       return false;
     }
   }
@@ -246,32 +361,61 @@ public class Parser {
   private boolean per(Node node) {
     Node per = new Node("per");
     if (matchL("per", token.getLexema(), per) &&
-        matchL("(", token.getLexema(), per) &&
-        declaracao(per) &&
-        matchL(";", token.getLexema(), per) &&
-        condicao(per) &&
-        matchL(";", token.getLexema(), per) &&
-        atribuicao(per) &&
-        matchL(";", token.getLexema(), per) &&
-        matchL(")", token.getLexema(), per) &&
-        matchL("{", token.getLexema(), per) &&
-        bloco(per) &&
-        matchL("}", token.getLexema(), per)) {
-      node.addNode(per);
-      return true;
+        matchL("(", token.getLexema(), per)) {
+
+      // Store the current token to get the loop variable name
+      Token loopVar = token;
+      boolean wasVar = false;
+
+      if (token.getLexema().equals("intero")) {
+        wasVar = true;
+      }
+
+      if (declaracao(per) &&
+          matchL(";", token.getLexema(), per) &&
+          condicao(per) &&
+          matchL(";", token.getLexema(), per) &&
+          atribuicao(per) &&
+          matchL(")", token.getLexema(), per) &&
+          matchL("{", token.getLexema(), per) &&
+          bloco(per) &&
+          matchL("}", token.getLexema(), per)) {
+
+        // Mark the loop variable as used since it's part of the loop control
+        if (loopVar != null && loopVar.getTipo().equals("ID")) {
+          String varName = loopVar.getLexema().substring(1); // Remove o underscore inicial
+          usedVariables.add(varName);
+        }
+
+        node.addNode(per);
+        return true;
+      }
     }
     return false;
   }
 
   private boolean atribuicao(Node node) {
     Node atribuicao = new Node("atribuicao");
-    if (matchT("ID", token.getLexema(), atribuicao) &&
-        operadorAtribuicao(atribuicao)) {
+    String varName = "";
 
-      if (expressao(atribuicao)) {
+    if (token.getTipo().equals("ID")) {
+      varName = token.getLexema().substring(1); // Remove o underscore inicial
+      try {
+        Symbol var = symbolTable.lookup(varName);
+        if (!matchT("ID", token.getLexema(), atribuicao))
+          return false;
+
+        if (!operadorAtribuicao(atribuicao))
+          return false;
+
+        if (!expressao(atribuicao))
+          return false;
+
+        var.setInitialized(true);
         node.addNode(atribuicao);
         return true;
-      } else {
+      } catch (SemanticException e) {
+        System.err.println("Erro semântico: " + e.getMessage());
         return false;
       }
     }
@@ -371,209 +515,144 @@ public class Parser {
 
   private void traduz(String code) {
     if (code.equals("se")) {
-      System.out.print("if ");
+      appendCode("\tif ");
       lastToken = "se";
     } else if (code.equals("altrimenti")) {
-      System.out.print("else ");
+      appendCode(" else"); // Space before else
       lastToken = "altrimenti";
     } else if (code.equals("intero")) {
       lastToken = "intero";
     } else if (code.equals("galleggiante")) {
-      System.out.print("float64 ");
       lastToken = "galleggiante";
     } else if (code.equals("stringa")) {
       lastToken = "stringa";
     } else if (code.equals("booleano")) {
-      System.out.print("bool ");
       lastToken = "booleano";
     } else if (code.equals("mentre")) {
-      if (isFare) {
-        System.out.print("if ");
-        isFare = false;
-        isMentre = true;
-      } else {
-        System.out.print("for ");
-        lastToken = "mentre";
-      }
-    } else if (code.equals("fare")) {
-      System.out.print("for ");
-      lastToken = "fare";
-      isFare = true;
+      appendCode("\tfor ");
+      lastToken = "mentre";
     } else if (code.equals("per")) {
-      System.out.print("for ");
+      appendCode("\tfor ");
       isPer = true;
+      semicolons = 0;
       lastToken = "per";
-    } else if (code.equals("funzione")) {
-      System.out.print("func ");
-      lastToken = "funzione";
-    } else if (code.equals("fermare")) {
-      System.out.print("return ");
-      lastToken = "fermare";
     } else if (code.equals("carattere")) {
-      System.out.print("fmt.Println");
+      if (lastToken.equals(";") || lastToken.equals("{")) {
+        appendCode("\t\t"); // Double tab for statements inside blocks
+      }
+      appendCode("fmt.Println");
       lastToken = "carattere";
       isPrintln = true;
-    } else if (code.equals("leggere")) {
-      System.out.print("fmt.Print");
-      lastToken = "leggere";
-      isScanln = true;
     } else if (code.equals(";")) {
-      if (isScanln) {
-        if (lastToken.endsWith("\"")) {
-          System.out.println(")");
-          System.out.print("fmt.Scanln()");
-        } else if (lastToken.startsWith("_")) {
-          System.out.println(")");
-          isScanln = false;
-        } else {
-          System.out.println(")");
-          isScanln = false;
-        }
+      if (isPrintln) {
+        appendCode(")\n");
         isPrintln = false;
-      } else if (isPrintln) {
-        System.out.println(")");
-        isPrintln = false;
-      } else if (isMentre) {
-        System.out.println("{");
-        System.out.println("break");
-        System.out.println("}");
-        System.out.println("}");
-        isMentre = false;
-      } else if (isPer) {
-        if (semicolons < 2) {
-          System.out.print("; ");
-          semicolons++;
-        }
+      } else if (isPer && semicolons < 2) {
+        appendCode("; "); // Semicolon and space for for-loop separators
+        semicolons++;
       } else {
-        System.out.println();
+        appendCode("\n"); // Just a newline for other cases
       }
       lastToken = ";";
     } else if (code.equals("{")) {
-      System.out.println(" {");
+      appendCode(" {\n"); // Space before brace, newline after
       lastToken = "{";
     } else if (code.equals("}")) {
-      if (!isFare) {
-        System.out.println("}");
+      if (token != null && token.getLexema().equals("altrimenti")) {
+        appendCode("\t}"); // Tab before closing brace, no newline
+      } else {
+        appendCode("\t}\n");
       }
       lastToken = "}";
     } else if (code.equals("(")) {
       if (!isPer) {
-        System.out.print("(");
+        appendCode("(");
       }
       lastToken = "(";
     } else if (code.equals(")")) {
       if (!isPer) {
-        System.out.print(")");
-      } else {
-        semicolons = 0;
-        isPer = false;
+        appendCode(")");
       }
       lastToken = ")";
     } else if (code.equals("<<")) {
-      System.out.print("(");
+      appendCode("(");
       lastToken = "<<";
-    } else if (code.equals(".")) {
-      System.out.print(", ");
-      lastToken = ".";
-    } else if (code.equals("xD")) {
-
-    } else if (code.equals("o")) {
-      System.out.print(" || ");
-      lastToken = "o";
-    } else if (code.equals("e")) {
-      System.out.print(" && ");
-      lastToken = "e";
     } else if (code.equals("=")) {
-      System.out.print(" := ");
+      String varName = "";
+      if (currentTokenIndex >= 2) {
+        Token prevToken = tokens.get(currentTokenIndex - 2);
+        if (prevToken.getTipo().equals("ID")) {
+          varName = prevToken.getLexema().substring(1);
+        }
+      }
+      if ((lastToken.equals("intero") || lastToken.equals("stringa") ||
+          lastToken.equals("galleggiante") || lastToken.equals("booleano") ||
+          (isPer && semicolons == 0)) ||
+          (!declaredVariables.contains(varName) && !varName.isEmpty())) {
+        appendCode(" := ");
+        if (!varName.isEmpty()) {
+          declaredVariables.add(varName);
+        }
+      } else {
+        appendCode(" = ");
+      }
       lastToken = "=";
-    } else if (code.equals("$")) {
-      System.out.print("");
-      lastToken = "$";
     } else if (code.equals("+=")) {
-      System.out.print(" += ");
+      appendCode(" += ");
       lastToken = "+=";
     } else if (code.equals("-=")) {
-      System.out.print(" -= ");
+      appendCode(" -= ");
       lastToken = "-=";
     } else if (code.equals("*=")) {
-      System.out.print(" *= ");
+      appendCode(" *= ");
       lastToken = "*=";
     } else if (code.equals("/=")) {
-      System.out.print(" /= ");
+      appendCode(" /= ");
       lastToken = "/=";
     } else if (code.equals("%=")) {
-      System.out.print(" %= ");
+      appendCode(" %= ");
       lastToken = "%=";
     } else if (code.equals(">")) {
-      if (isFare) {
-        System.out.print(" <= ");
-      } else {
-        System.out.print(" > ");
-      }
+      appendCode(" > ");
       lastToken = ">";
     } else if (code.equals("<")) {
-      if (isFare) {
-        System.out.print(" >= ");
-      } else {
-        System.out.print(" < ");
-      }
+      appendCode(" < ");
       lastToken = "<";
     } else if (code.equals("==")) {
-      if (isFare) {
-        System.out.print(" != ");
-      } else {
-        System.out.print(" == ");
-      }
+      appendCode(" == ");
       lastToken = "==";
     } else if (code.equals("!=")) {
-      if (isFare) {
-        System.out.print(" == ");
-      } else {
-        System.out.print(" != ");
-      }
+      appendCode(" != ");
       lastToken = "!=";
     } else if (code.equals(">=")) {
-      if (isFare) {
-        System.out.print(" < ");
-      } else {
-        System.out.print(" >= ");
-      }
+      appendCode(" >= ");
       lastToken = ">=";
     } else if (code.equals("<=")) {
-      if (isFare) {
-        System.out.print(" > ");
-      } else {
-        System.out.print(" <= ");
-      }
+      appendCode(" <= ");
       lastToken = "<=";
     } else if (code.equals("+")) {
-      System.out.print(" + ");
+      appendCode(" + ");
       lastToken = "+";
     } else if (code.equals("-")) {
-      System.out.print(" - ");
+      appendCode(" - ");
       lastToken = "-";
     } else if (code.equals("*")) {
-      System.out.print(" * ");
+      appendCode(" * ");
       lastToken = "*";
     } else if (code.equals("/")) {
-      System.out.print(" / ");
+      appendCode(" / ");
       lastToken = "/";
     } else if (code.equals("%")) {
-      System.out.print(" % ");
+      appendCode(" % ");
       lastToken = "%";
     } else {
       if (code.startsWith("_")) {
-        if (isScanln) {
-          System.out.print("&" + code.substring(1));
-        } else {
-          System.out.print(code.substring(1));
+        if (lastToken.equals(";") || lastToken.equals("{")) {
+          appendCode("\t\t"); // Double tab for statements inside blocks
         }
-      } else if (code.endsWith("\"") && lastToken.equals("leggere")) {
-        System.out.print("(" + code + ")");
-        System.out.println();
-        System.out.print("fmt.Scanln(");
+        appendCode(code.substring(1));
       } else {
-        System.out.print(code);
+        appendCode(code);
       }
       lastToken = code;
     }

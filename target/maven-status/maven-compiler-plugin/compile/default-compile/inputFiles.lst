@@ -3,6 +3,7 @@
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/Number.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/Token.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/ReservedToken.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/generator/GoFileGenerator.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/ID.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/parser/Node.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/semantic/Symbol.java
