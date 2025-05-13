@@ -1,7 +1,4 @@
-<<<<<<< Updated upstream
-=======
 compiler/semantic/SemanticException.class
->>>>>>> Stashed changes
 compiler/lexer/Texto.class
 compiler/parser/Parser.class
 compiler/parser/Node.class

@@ -22,6 +22,7 @@ public class CompilerServer {
         SpringApplication.run(CompilerServer.class, args);
     }
 
+
     /*
      * @GetMapping("/health")
      * public Map<String, String> healthCheck() {
@@ -43,14 +44,13 @@ public class CompilerServer {
 
             // Análise sintática
             Parser parser = new Parser(tokens);
-
             // Captura a saída do System.out
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             PrintStream originalOut = System.out;
             System.setOut(new PrintStream(outputStream));
-
+            
             parser.main();
-
+           
             // Restaura o System.out original
             System.setOut(originalOut);
 
@@ -67,4 +67,4 @@ public class CompilerServer {
 
         return response;
     }
-}
+} 

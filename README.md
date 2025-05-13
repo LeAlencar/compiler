@@ -8,11 +8,7 @@ bloco → linha bloco | linha
 
 linha → escrever | ler | declaracao ';' | ifelse | while | for | atribuicao ';'
 
-<<<<<<< Updated upstream
-escrever → **'carattere'** '<<' (TEXTO | '\$' ID) ('.' ('$' ID | TEXTO))\* ';'
-=======
 escrever → **'carattere'** '<<' (TEXTO | '$' ID) ('.' ('$' ID | TEXTO))\* ';'
->>>>>>> Stashed changes
 
 ler → **'leggere'** 'xD' TEXTO ID? ';'
 
@@ -48,7 +44,6 @@ NUM → (0-9)+
 
 TEXTO → '"' (0-9 | a-z | A-Z | ' ' )+ '"'
 
-<<<<<<< Updated upstream
 ````
 stringa _s = \"Hello, World!\";" +
       "carattere << $_s;intero _x = 10;" +
@@ -57,7 +52,7 @@ stringa _s = \"Hello, World!\";" +
         "per (intero _i = 0; _i < 10; _i += 1;) {_x = _x * 2;}
         ```
 ````
-=======
+
 # Server
 
 # Compilador como Servidor
@@ -140,4 +135,4 @@ Resposta de erro:
    - Escolha "JSON" no dropdown
    - Cole o JSON com o código a ser compilado
 4. Envie a requisição
->>>>>>> Stashed changes
+

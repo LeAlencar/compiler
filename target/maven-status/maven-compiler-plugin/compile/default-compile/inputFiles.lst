@@ -1,11 +1,7 @@
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/server/CompilerServer.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/semantic/SymbolTable.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/Number.java
-<<<<<<< Updated upstream
-/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/ReservedToken.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/Texto.java
-=======
->>>>>>> Stashed changes
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/Token.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/ReservedToken.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/ID.java
