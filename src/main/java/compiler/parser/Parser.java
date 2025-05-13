@@ -532,7 +532,7 @@ public class Parser {
       appendCode("\tfor ");
       lastToken = "mentre";
     } else if (code.equals("per")) {
-      appendCode("\tfor ");
+      appendCode("\tfor "); // Add space after for
       isPer = true;
       semicolons = 0;
       lastToken = "per";
@@ -555,15 +555,28 @@ public class Parser {
       }
       lastToken = ";";
     } else if (code.equals("{")) {
-      appendCode(" {\n"); // Space before brace, newline after
+      if (lastToken.equals("altrimenti")) {
+        appendCode(" {\n"); // Space before brace, newline after
+      } else {
+        appendCode(" {\n"); // Space before brace, newline after
+      }
       lastToken = "{";
     } else if (code.equals("}")) {
-      if (token != null && token.getLexema().equals("altrimenti")) {
-        appendCode("\t}"); // Tab before closing brace, no newline
+      System.out.println("teste " + token.getTipo());
+      // Peek at the next token without consuming it
+      Token nextToken = null;
+      if (currentTokenIndex < tokens.size()) {
+        nextToken = tokens.get(currentTokenIndex);
+      }
+      if (nextToken != null && nextToken.getTipo().equals("ELSE")) {
+        appendCode("\t}"); // No newline if next token is else
       } else {
-        appendCode("\t}\n");
+        appendCode("\t}\n"); // Add newline in all other cases
       }
       lastToken = "}";
+    } else if (code.equals("altrimenti")) {
+      appendCode(" else"); // Space before else
+      lastToken = "altrimenti";
     } else if (code.equals("(")) {
       if (!isPer) {
         appendCode("(");
