@@ -1,58 +1,35 @@
 package compiler.semantic;
 
 public class Symbol {
-  private String name; // Nome do identificador
-  private String type; // Tipo (intero, stringa, booleano)
-  private boolean initialized; // Se foi inicializado
-  private Object value; // Valor, se houver
-  private int scope; // Escopo da variável
+  String sym;
+  SymbolTable parentSymbolTable;
+  SymbolTable subscopeSymbolTable;
+  boolean isConst;
 
-  public Symbol(String name, String type, int scope) {
-    this.name = name;
-    this.type = type;
-    this.scope = scope;
-    this.initialized = false;
-    this.value = null;
+  public Symbol(String sym, SymbolTable parentSymbolTable, SymbolTable subscopeSymbolTable, boolean isConst) {
+      this.sym = sym;
+      this.parentSymbolTable = parentSymbolTable;
+      this.subscopeSymbolTable = subscopeSymbolTable;
+      this.isConst = isConst;
   }
 
-  // Getters e Setters
-  public String getName() {
-    return name;
+  public Symbol(String sym, SymbolTable parentSymbolTable, boolean isConst) {
+      this.sym = sym;
+      this.parentSymbolTable = parentSymbolTable;
+      this.isConst = isConst;
   }
 
-  public String getType() {
-    return type;
-  }
-
-  public boolean isInitialized() {
-    return initialized;
-  }
-
-  public void setInitialized(boolean initialized) {
-    this.initialized = initialized;
-  }
-
-  public Object getValue() {
-    return value;
-  }
-
-  public void setValue(Object value) {
-    this.value = value;
-    this.initialized = true;
-  }
-
-  public int getScope() {
-    return scope;
-  }
-
-  @Override
-  public String toString() {
-    return "Symbol{" +
-        "name='" + name + '\'' +
-        ", type='" + type + '\'' +
-        ", initialized=" + initialized +
-        ", value=" + value +
-        ", scope=" + scope +
-        '}';
+  public void print(int level) {
+      for (int i = 0; i < level; i++) {
+          System.out.print(" ");
+      }
+      System.out.print(sym);
+      if (isConst) {
+          System.out.print(" (const)");
+      }
+      System.out.println();
+      if (subscopeSymbolTable != null) {
+          subscopeSymbolTable.print(level + 1);
+      }
   }
 }

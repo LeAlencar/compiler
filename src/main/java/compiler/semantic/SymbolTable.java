@@ -1,95 +1,65 @@
 package compiler.semantic;
-
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
-import java.util.Set;
-import java.util.HashSet;
 
 public class SymbolTable {
-  private Stack<Map<String, Symbol>> scopes;
-  private int currentScope;
+    String scope;
+    SymbolTable parent;
+    HashMap<String, Symbol> table;
 
-  public SymbolTable() {
-    this.scopes = new Stack<>();
-    this.currentScope = 0;
-    // Inicializa o escopo global
-    enterScope();
-  }
-
-  // Entra em um novo escopo
-  public void enterScope() {
-    scopes.push(new HashMap<>());
-    currentScope++;
-  }
-
-  // Sai do escopo atual
-  public void exitScope() {
-    if (!scopes.isEmpty()) {
-      scopes.pop();
-      currentScope--;
-    }
-  }
-
-  // Insere um novo símbolo no escopo atual
-  public void insert(String name, String type) throws SemanticException {
-    Map<String, Symbol> currentScopeTable = scopes.peek();
-
-    // Verifica se já existe no escopo atual
-    if (currentScopeTable.containsKey(name)) {
-      throw new SemanticException("Variável '" + name + "' já declarada no escopo atual");
+    public SymbolTable(String sc) {
+        this.scope = sc;
+        this.table = new HashMap<String,Symbol>();
     }
 
-    Symbol symbol = new Symbol(name, type, currentScope);
-    currentScopeTable.put(name, symbol);
-  }
-
-  // Busca um símbolo em todos os escopos, do mais interno ao mais externo
-  public Symbol lookup(String name) throws SemanticException {
-    for (int i = scopes.size() - 1; i >= 0; i--) {
-      Symbol symbol = scopes.get(i).get(name);
-      if (symbol != null) {
-        return symbol;
-      }
+    public SymbolTable(String scope, SymbolTable parent) {
+        this.scope = scope;
+        this.parent = parent;
+        this.table = new HashMap<String, Symbol>();
     }
-    throw new SemanticException("Variável '" + name + "' não declarada");
-  }
 
-  // Verifica se um tipo é válido
-  public boolean isValidType(String type) {
-    return type.equals("intero") ||
-        type.equals("stringa") ||
-        type.equals("booleano");
-  }
-
-  // Verifica compatibilidade de tipos para operações
-  public void checkTypeCompatibility(String var1, String var2, String operation) throws SemanticException {
-    Symbol symbol1 = lookup(var1);
-    Symbol symbol2 = lookup(var2);
-
-    if (!symbol1.getType().equals(symbol2.getType())) {
-      throw new SemanticException("Tipos incompatíveis na operação " + operation +
-          ": " + symbol1.getType() + " e " + symbol2.getType());
+    //NOTE: in the github version this function does not
+    // check parent scopes when doing lookups, I fixed that in later revisions
+    // to match this
+    public Symbol lookup(String sym) {
+        Symbol result;
+        result = table.get(sym);
+        if (result != null) {
+            return result;
+        } else if (parent != null) {
+            return parent.lookup(sym);
+        } else  {
+            return null;
+        }
     }
-  }
 
-  // Atualiza o valor de uma variável
-  public void updateValue(String name, Object value) throws SemanticException {
-    Symbol symbol = lookup(name);
-    symbol.setValue(value);
-  }
-
-  // Retorna o escopo atual
-  public int getCurrentScope() {
-    return currentScope;
-  }
-
-  // Retorna todas as variáveis declaradas em todos os escopos
-  public Set<String> getAllVariableNames() {
-    Set<String> allVariables = new HashSet<>();
-    for (Map<String, Symbol> scope : scopes) {
-      allVariables.addAll(scope.keySet());
+    public void insert(String scope, boolean isConst, SymbolTable sub) throws SemanticException {
+        if (table.containsKey(scope)) {
+            throw new SemanticException("redeclaração de " + scope);
+        } else {
+            sub.parent = this;
+            table.put(scope, new Symbol(scope, this, sub, isConst));
+        }
     }
-    return allVariables;
-  }
+
+    public void insert(String scope, boolean isConst) throws SemanticException {
+        if (table.containsKey(scope)) {
+            throw new SemanticException("redeclaração de " + scope);
+        } else {
+            table.put(scope, new Symbol(scope, this, isConst));
+        }
+    }
+
+    public void print() {
+        print(0);
+    }
+
+    public void print(int level) {
+        for (int i = 0; i < level; i++) {
+            System.out.print(" ");
+        }
+        System.out.println(scope +  " - " + table.size() + " symbols");
+        for (Symbol entry : table.values()) {
+            entry.print(level + 1);
+        }
+    }
 }

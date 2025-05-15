@@ -3,6 +3,7 @@ package compiler.main;
 import compiler.lexer.Lexer;
 import compiler.lexer.Token;
 import compiler.parser.Parser;
+import compiler.semantic.SemanticAnalyzer;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,15 +18,15 @@ public class Main {
         // 2;}";
         // String data = "intero _x = 10; intero _y = 5; intero _z = _x * _y;";
 
-        /*
-         * String data = "stringa _s = \"Hello, World!\";" +
-         * "carattere << $_s;intero _x = 10;" +
-         * "se _x == 10 {leggere xD \"Escreva seu nome\" _leitura;_x=1;}" +
-         * "fare {_x = _x + 1;} mentre _x < 15;" +
-         * "per (intero _i = 0; _i < 10; _i += 1;) {_x = _x * 2;}";
-         */
+        
+          String data = "stringa _s = \"Hello, World!\";" +
+          "carattere << $_s;intero _x = 10;stringa _leitura = \"\";" +
+          "se _x == 10 {leggere xD \"Escreva seu nome\" _leitura;_x=1;}" +
+          "fare {_x = _x + 1;_x = _x * 2;} mentre _x < 15;" +
+          "per (intero _i = 0; _i < 10; _i += 1;) {_x = _x * 2;}teste();funzione teste()intero _j =10;intero _k = _j + 1;fermare funzione testee()fermare";
+         
 
-        String data = "intero _x = 10; intero _y = 5; intero _z = _x * _y;";
+        // String data = "intero _x = 10; intero _y = 5; intero _z = _x * _y;funzione teste()intero _j =10;intero _k = _j + 1;fermare";
         // Análise léxica
         Lexer lexer = new Lexer(data);
         tokens = lexer.getTokens();
@@ -41,5 +42,9 @@ public class Main {
         Parser parser = new Parser(tokens);
         parser.main();
         System.out.println("\nSintaticamente correta\n");
+
+        // Análise semântica
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(tokens);
+        semanticAnalyzer.analyze();
     }
 }

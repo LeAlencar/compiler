@@ -109,6 +109,10 @@ public class ReservedToken extends AFD {
             return new Token("WRITE", "carattere");
         } else if (current == 'x' && checkWord(code, "xD")) {
             return new Token("READCARACTER", "xD");
+        } else if (current == 'f' && checkWord(code, "funzione")) {
+            return new Token("FUNCTION", "funzione");
+        } else if (current == 'f' && checkWord(code, "fermare")) {
+            return new Token("END_FUNCTION", "fermare");
         }
       
         return null;

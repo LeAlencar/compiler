@@ -1,12 +1,18 @@
 # Gramática
 
-funcao → **'funzione'** NOME '(' (declaracaoFuncao | ε) ')' bloco fermare
+funcao → **'funzione'** NOME '(' (declaracaoFuncao | ε) ')' bloco? fermare
 
 declaracaoFuncao → tipo ID | tipo ID ',' declaracaoFuncao
 
 bloco → linha bloco | linha
 
-linha → escrever | ler | declaracao ';' | ifelse | while | for | atribuicao ';'
+linha → escrever | ler | declaracao ';' | ifelse | while | for | atribuicao ';' | chamadaFunc
+
+chamadaFunc → NOME '(' argumentos? ')' ';'
+
+argumentos → exprChamadaFunc (',' exprChamadaFunc)*
+
+exprChamadaFunc → ID | NUM | TEXTO | chamadaFunc
 
 escrever → **'carattere'** '<<' (TEXTO | '$' ID) ('.' ('$' ID | TEXTO))\* ';'
 

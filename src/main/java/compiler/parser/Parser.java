@@ -1,6 +1,8 @@
 package compiler.parser;
 
 import compiler.lexer.Token;
+import compiler.semantic.SymbolTable;
+import compiler.semantic.SemanticException;
 
 import java.util.List;
 
@@ -27,19 +29,19 @@ public class Parser {
     Node root = new Node("main");
     Tree tree = new Tree(root);
 
-    System.out.println("package main");
+    /*System.out.println("package main");
     System.out.println("import (");
     System.out.println("\"fmt\"");
     System.out.println(")");
-    System.out.println("func main() {");
+    System.out.println("func main() {");*/
 
     loop(root, tree);
   }
 
   public void loop(Node root, Tree tree) {
-    if (bloco(root)) {
+    if (bloco(root) || funcao(root)) {
       if (token.getTipo().equals("EOF")) {
-        System.out.println("}");
+        // System.out.println("}");
 
         // tree.preOrder();
         // tree.printCode();
@@ -66,6 +68,76 @@ public class Parser {
 
   // BLOCO
   // --------------------------------------------------------------------------------------------------------------------------------------------
+  private boolean funcao(Node node) {
+    Node funcao = new Node("funcao");
+    if (matchL("funzione", token.getLexema(), funcao) &&
+        matchT("NOME", token.getLexema(), funcao) &&
+        matchL("(", token.getLexema(), funcao)) {
+          if (matchL(")", token.getLexema(), funcao)) {
+            if (bloco(funcao) && matchL("fermare", token.getLexema(), funcao)) {
+              node.addNode(funcao);
+              return true;
+            }
+            else if (matchL("fermare", token.getLexema(), funcao)) {
+              node.addNode(funcao);
+              return true;
+            }
+            else {
+              return false;
+            }
+          }
+          else if (funcaoDeclaracao(funcao) && matchL(")", token.getLexema(), funcao)) {
+            if (bloco(funcao) && matchL("fermare", token.getLexema(), funcao)) {
+              node.addNode(funcao);
+              return true;
+            }
+            else if (matchL("fermare", token.getLexema(), funcao)) {
+              node.addNode(funcao);
+              return true;
+            }
+            else {
+              return false;
+            }
+          }
+          else {
+            return false;
+          }
+        }
+    else {
+      return false;
+    }
+  }
+
+
+
+
+  private boolean funcaoDeclaracao(Node node) {
+    Node funcaoDeclaracao = new Node("funcaoDeclaracao");
+    if ((matchL("intero", token.getLexema(), funcaoDeclaracao) ||
+        matchL("stringa", token.getLexema(), funcaoDeclaracao) ||
+        matchL("booleano", token.getLexema(), funcaoDeclaracao)) &&
+        matchT("ID", token.getLexema(), funcaoDeclaracao)) {
+          if (matchL(",", token.getLexema(), funcaoDeclaracao)) {
+            if (funcaoDeclaracao(funcaoDeclaracao)) {
+              return true;
+            }
+            else {
+              return false;
+            }
+          }
+          else {
+            return true;
+          }
+  }
+  else {
+    return false;
+  }
+}
+
+
+
+  // BLOCO
+  // --------------------------------------------------------------------------------------------------------------------------------------------
   private boolean bloco(Node node) {
     Node bloco = new Node("bloco");
     if (linha(bloco)) {
@@ -84,7 +156,7 @@ public class Parser {
     Node linha = new Node("linha");
     if (escrever(linha) || ler(linha) || (declaracao(linha) && matchL(";", token.getLexema(), linha)) ||
         sealtrimenti(linha) || mentrefare(linha) || per(linha) ||
-        farementre(linha) || (atribuicao(linha) && matchL(";", token.getLexema(), linha))) {
+        farementre(linha) || (atribuicao(linha) && matchL(";", token.getLexema(), linha)) || chamadaFunc(linha)) {
       node.addNode(linha);
       return true;
     }
@@ -147,11 +219,15 @@ public class Parser {
   // --------------------------------------------------------------------------------------------------------------------------------------------
   private boolean declaracao(Node node) {
     Node declaracao = new Node("declaracao");
+    int tipoIndex = currentTokenIndex - 1;
     if ((matchL("intero", token.getLexema(), declaracao) ||
         matchL("stringa", token.getLexema(), declaracao) ||
         matchL("booleano", token.getLexema(), declaracao)) &&
         matchT("ID", token.getLexema(), declaracao) &&
         operadorAtribuicao(declaracao)) {
+
+      // Adiciona variável na tabela de símbolos
+      
 
       if (expressao(declaracao)) {
         node.addNode(declaracao);
@@ -351,7 +427,7 @@ public class Parser {
 
   private boolean matchL(String palavra, String newcode, Node node) {
     if (token.getLexema().equals(palavra)) {
-      traduz(newcode);
+      //traduz(newcode);
       node.addNode(newcode);
       token = getNextToken();
       return true;
@@ -361,7 +437,7 @@ public class Parser {
 
   private boolean matchT(String palavra, String newcode, Node node) {
     if (token.getTipo().equals(palavra)) {
-      traduz(newcode);
+      //traduz(newcode);
       node.addNode(newcode);
       token = getNextToken();
       return true;
@@ -369,7 +445,50 @@ public class Parser {
     return false;
   }
 
-  private void traduz(String code) {
+  // CHAMADA DE FUNÇÃO
+  // chamadaFunc → NOME '(' argumentos? ')'
+  private boolean chamadaFunc(Node node) {
+    Node chamada = new Node("chamadaFunc");
+    if (matchT("NOME", token.getLexema(), chamada) && matchL("(", token.getLexema(), chamada)) {
+      if (argumentos(chamada)) {
+        // argumentos opcionais
+      }
+      if (matchL(")", token.getLexema(), chamada) && matchL(";", token.getLexema(), chamada)) {
+        node.addNode(chamada);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // argumentos → exprChamadaFunc (',' exprChamadaFunc)*
+  private boolean argumentos(Node node) {
+    Node args = new Node("argumentos");
+    if (exprChamadaFunc(args)) {
+      while (token != null && token.getLexema().equals(",")) {
+        matchL(",", token.getLexema(), args);
+        exprChamadaFunc(args);
+      }
+      node.addNode(args);
+      return true;
+    }
+    return false;
+  }
+
+  // exprChamadaFunc → ID | NUM | TEXTO | chamadaFunc
+  private boolean exprChamadaFunc(Node node) {
+    Node expr = new Node("exprChamadaFunc");
+    if (matchT("ID", token.getLexema(), expr) ||
+        matchT("NUM", token.getLexema(), expr) ||
+        matchT("TEXTO", token.getLexema(), expr) ||
+        chamadaFunc(expr)) {
+      node.addNode(expr);
+      return true;
+    }
+    return false;
+  }
+
+  /*private void traduz(String code) {
     if (code.equals("se")) {
       System.out.print("if ");
       lastToken = "se";
@@ -577,5 +696,5 @@ public class Parser {
       }
       lastToken = code;
     }
-  }
+  }*/
 }

@@ -18,6 +18,7 @@ public class Lexer {
         afds.add(new ReservedToken());
         afds.add(new Number());
         afds.add(new MathOperator());
+        afds.add(new NOME());
         afds.add(new ID());
         afds.add(new Texto());
     }
