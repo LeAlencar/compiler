@@ -5,30 +5,27 @@ import (
 )
 
 func main() {
-	var s = "Hello, World!"
-	fmt.Println(s)
 	var x = 10
-	var leitura = ""
-	if x == 10{
-	fmt.Print("Escreva seu nome")
-	fmt.Scanln(&leitura)
-x = 1
+	x = x
+	var y = 5
+	y = y
+	var z = x * y
+	z = z
+	fmt.Println(z)
 }
-	for {x = x + 1
-x = x * 2
-
-	if x < 15 { break; }
-}
-	for i := 0; i < 10; i += 1 {
-x = x * 2
-}
-teste()}
 
 func teste() {
 	var j = 10
+	j = j
+	if j > 10 {
+		j += 1
+		if j > 15 {
+			j += 2
+		}
+	} else {
+		j -= 5
+	}
+	fmt.Println("hello")
 	var k = j + 1
+	k = k
 }
-
-func testee() {
-}
-

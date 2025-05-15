@@ -1,0 +1,19 @@
+
+intero _x = 10; 
+intero _y = 5; 
+intero _z = _x * _y;
+carattere << $_z;
+
+funzione teste()
+intero _j =10;
+se _j > 10 {
+  _j += 1;
+  se _j > 15 {
+    _j += 2;
+  }
+} altrimenti {
+  _j -= 5;
+}
+carattere << "hello";
+intero _k = _j + 1;
+fermare
