@@ -103,6 +103,8 @@ public class ReservedToken extends AFD {
             return new Token("TYPE_STRING", "stringa");
         } else if (current == 'b' && checkWord(code, "booleano")) {
             return new Token("TYPE_BOOL", "booleano");
+        } else if (current == 'g' && checkWord(code, "galleggiante")) {
+            return new Token("TYPE_FLOAT", "galleggiante");
         } else if (current == 'l' && checkWord(code, "leggere")) {
             return new Token("READ", "leggere");
         } else if (current == 'c' && checkWord(code, "carattere")) {
@@ -113,6 +115,10 @@ public class ReservedToken extends AFD {
             return new Token("FUNCTION", "funzione");
         } else if (current == 'f' && checkWord(code, "fermare")) {
             return new Token("END_FUNCTION", "fermare");
+        } else if (current == 'o' && checkWord(code, "o")) {
+            return new Token("OR", "o");
+        } else if (current == 'e' && checkWord(code, "e")) {
+            return new Token("AND", "e");
         }
       
         return null;
@@ -121,17 +127,12 @@ public class ReservedToken extends AFD {
     private boolean checkWord(CharacterIterator it, String word) {
         int startPos = it.getIndex();
         boolean match = true;
-        
         for (int i = 0; i < word.length(); i++) {
             if (it.current() != word.charAt(i)) {
                 match = false;
                 break;
             }
             it.next();
-        }
-        
-        if (match && !isTokenSeparator(it)) {
-            match = false;
         }
         
         if (!match) {

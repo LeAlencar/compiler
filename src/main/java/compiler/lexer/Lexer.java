@@ -16,15 +16,17 @@ public class Lexer {
         afds = new ArrayList<>();
         this.code = new StringCharacterIterator(code);
         afds.add(new ReservedToken());
+        afds.add(new Texto());
+        afds.add(new DecimalNumber());
         afds.add(new Number());
         afds.add(new MathOperator());
-        afds.add(new NOME());
         afds.add(new ID());
-        afds.add(new Texto());
+        afds.add(new NOME());
     }
     
     public void skipWhiteSpace() {
-        while (code.current() == ' ' || code.current() == '\n') {
+        while (code.current() != CharacterIterator.DONE && 
+               (code.current() == ' ' || code.current() == '\n' || code.current() == '\r' || code.current() == '\t')) {
             code.next();
         }
     }
@@ -51,7 +53,16 @@ public class Lexer {
     }
     
     private void error() {
-        throw new RuntimeException("Erro: token não reconhecido: " + code.current());
+        StringBuilder context = new StringBuilder();
+        int pos = code.getIndex();
+        code.setIndex(Math.max(0, pos - 10));
+        for (int i = 0; i < 20 && code.current() != CharacterIterator.DONE; i++) {
+            context.append(code.current());
+            code.next();
+        }
+        code.setIndex(pos);
+        throw new RuntimeException("Erro: token não reconhecido '" + code.current() + "' na posição " + pos + 
+                                 "\nContexto: ..." + context.toString() + "...");
     }
 }
 

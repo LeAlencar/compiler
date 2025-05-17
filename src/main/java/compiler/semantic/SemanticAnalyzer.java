@@ -8,6 +8,9 @@ import compiler.semantic.SemanticException;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 public class SemanticAnalyzer {
   private List<Token> tokens;
@@ -26,20 +29,129 @@ public class SemanticAnalyzer {
   public void analyze() {
     Set<String> declaradas = new HashSet<>();
     Set<String> funcoes = new HashSet<>();
+    Map<String, Integer> funcoesParametros = new HashMap<>();
+    Map<String, List<String>> funcoesTiposParametros = new HashMap<>();
+    Map<String, String> tiposVariaveis = new HashMap<>(); // Mapa para armazenar tipos das variáveis
     boolean erro = false;
+    
+    // Primeira passagem: coletar informações sobre funções e variáveis
     for (int i = 0; i < tokens.size(); i++) {
       Token token = tokens.get(i);
-      // Verifica declaração de função repetida
+      
+      // Coleta tipos de variáveis
+      if (token.getTipo().equals("ID") && i > 0) {
+        Token prev = tokens.get(i - 1);
+        if (prev.getLexema().equals("intero") || prev.getLexema().equals("stringa") ||
+            prev.getLexema().equals("booleano") || prev.getLexema().equals("galleggiante")) {
+          tiposVariaveis.put(token.getLexema(), prev.getLexema());
+        }
+      }
+      
       if (token.getLexema().equals("funzione") && i + 1 < tokens.size() && tokens.get(i + 1).getTipo().equals("NOME")) {
         String nomeFunc = tokens.get(i + 1).getLexema();
         if (funcoes.contains(nomeFunc)) {
           System.err.println("Erro: função '" + nomeFunc + "' já declarada");
           erro = true;
-          break;
+          System.exit(1);
         } else {
           funcoes.add(nomeFunc);
+          List<String> tiposParams = new ArrayList<>();
+          int numParams = 0;
+          int j = i + 2; // Pula 'funzione' e nome
+          String tipoAtual = null;
+          while (j < tokens.size() && !tokens.get(j).getLexema().equals(")")) {
+            Token tk = tokens.get(j);
+            if (tk.getLexema().equals("intero")) {
+              tipoAtual = "intero";
+            } else if (tk.getLexema().equals("stringa")) {
+              tipoAtual = "stringa";
+            } else if (tk.getLexema().equals("booleano")) {
+              tipoAtual = "booleano";
+            } else if (tk.getLexema().equals("galleggiante")) {
+              tipoAtual = "galleggiante";
+            } else if (tk.getTipo().equals("ID") && tipoAtual != null) {
+              tiposParams.add(tipoAtual);
+              tiposVariaveis.put(tk.getLexema(), tipoAtual); // Registra o tipo do parâmetro
+              numParams++;
+              tipoAtual = null;
+            }
+            j++;
+          }
+          funcoesParametros.put(nomeFunc, numParams);
+          funcoesTiposParametros.put(nomeFunc, tiposParams);
         }
       }
+    }
+
+    // Segunda passagem: análise semântica
+    for (int i = 0; i < tokens.size(); i++) {
+      Token token = tokens.get(i);
+      
+      // Verifica chamada de função
+      if (token.getTipo().equals("NOME") && i + 1 < tokens.size() && tokens.get(i + 1).getLexema().equals("(")) {
+        String nomeFunc = token.getLexema();
+        if (!funcoes.contains(nomeFunc)) {
+          System.err.println("Erro: função '" + nomeFunc + "' não declarada");
+          System.exit(1);
+        }
+        
+        // Conta e verifica argumentos passados
+        int numArgs = 0;
+        int j = i + 2; // Pula nome e '('
+        List<String> tiposArgs = new ArrayList<>();
+        while (j < tokens.size() && !tokens.get(j).getLexema().equals(")")) {
+          Token arg = tokens.get(j);
+          if (arg.getTipo().equals("ID") || arg.getTipo().equals("NUM") || 
+              arg.getTipo().equals("TEXTO") || arg.getTipo().equals("NUMDECIMAL")) {
+            numArgs++;
+            // Determina o tipo do argumento
+            String tipoArg;
+            if (arg.getTipo().equals("NUM")) {
+              tipoArg = "intero";
+            } else if (arg.getTipo().equals("NUMDECIMAL")) {
+              tipoArg = "galleggiante";
+            } else if (arg.getTipo().equals("TEXTO")) {
+              tipoArg = "stringa";
+            } else if (arg.getTipo().equals("ID")) {
+              // Verifica o tipo da variável no mapa
+              tipoArg = tiposVariaveis.get(arg.getLexema());
+              if (tipoArg == null) {
+                System.err.println("Erro: tipo da variável '" + arg.getLexema() + "' não pode ser determinado");
+                erro = true;
+                break;
+              }
+            } else {
+              tipoArg = "booleano"; // Assume boolean para true/false
+            }
+            tiposArgs.add(tipoArg);
+          }
+          j++;
+        }
+        
+        // Verifica número de argumentos
+        int expectedParams = funcoesParametros.get(nomeFunc);
+        if (numArgs != expectedParams) {
+          System.err.println("Erro: função '" + nomeFunc + "' espera " + expectedParams + 
+                           " parâmetros, mas recebeu " + numArgs);
+          erro = true;
+          System.exit(1);
+        }
+        
+        // Verifica tipos dos argumentos
+        List<String> tiposEsperados = funcoesTiposParametros.get(nomeFunc);
+        for (int k = 0; k < tiposArgs.size(); k++) {
+          String tipoArg = tiposArgs.get(k);
+          String tipoEsperado = tiposEsperados.get(k);
+          if (!tipoArg.equals(tipoEsperado)) {
+            System.err.println("Erro: tipo incompatível no argumento " + (k + 1) + 
+                             " da função '" + nomeFunc + "'. Esperado: " + tipoEsperado + 
+                             ", Recebido: " + tipoArg);
+            erro = true;
+            System.exit(1);
+          }
+        }
+      }
+
       // Detecta declaração de variável: tipo + ID
       if (token.getTipo().equals("ID")) {
         boolean isDeclaracao = false;
@@ -47,7 +159,7 @@ public class SemanticAnalyzer {
         if (i > 0) {
           Token prev = tokens.get(i - 1);
           if ((prev.getLexema().equals("intero") || prev.getLexema().equals("stringa")
-              || prev.getLexema().equals("booleano"))) {
+              || prev.getLexema().equals("booleano") || prev.getLexema().equals("galleggiante"))) {
             tipoVar = prev.getLexema();
             isDeclaracao = true;
             if (!declaradas.contains(token.getLexema())) {
@@ -65,6 +177,8 @@ public class SemanticAnalyzer {
                 } else if (tipoVar.equals("booleano")
                     && (valorAtribuido.equals("true") || valorAtribuido.equals("false"))) {
                   tipoCompativel = true;
+                } else if (tipoVar.equals("galleggiante") && valor.getTipo().equals("NUMDECIMAL")) {
+                  tipoCompativel = true;
                 } else if (valor.getTipo().equals("ID")) {
                   // Se for variável, precisa estar declarada e ser do mesmo tipo
                   if (declaradas.contains(valorAtribuido)) {
@@ -78,7 +192,7 @@ public class SemanticAnalyzer {
                             tipoCompativel = true;
                             break;
                           } else if (tprev.getLexema().equals("intero") || tprev.getLexema().equals("stringa")
-                              || tprev.getLexema().equals("booleano")) {
+                              || tprev.getLexema().equals("booleano") || tprev.getLexema().equals("galleggiante")) {
                             tipoCompativel = false;
                             break;
                           }
@@ -95,16 +209,14 @@ public class SemanticAnalyzer {
               if (!tipoCompativel) {
                 System.err.println(
                     "Erro: tipo incompatível na atribuição de '" + token.getLexema() + "' (tipo " + tipoVar + ")");
-                erro = true;
-                break;
+                System.exit(1);
               } else {
                 try {
                   symbolTable.insert(token.getLexema(), false);
                   declaradas.add(token.getLexema());
                 } catch (SemanticException e) {
                   System.err.println(e.getMessage());
-                  erro = true;
-                  break;
+                  System.exit(1);
                 }
               }
             }
@@ -114,18 +226,14 @@ public class SemanticAnalyzer {
         if (!isDeclaracao) {
           if (!declaradas.contains(token.getLexema())) {
             System.err.println("Erro: variável '" + token.getLexema() + "' não declarada");
-            erro = true;
-            break;
+            System.exit(1);
           }
         }
       }
     }
-    // Imprime a tabela de símbolos ao final
-    symbolTable.print();
-    // Só traduz se não houver erro
     if (!erro) {
       String goCode = translateToGo();
-      System.out.println("\nCódigo traduzido para GoLang:\n" + goCode);
+      System.out.println("\nSemanticamente correta\n");
       GoFileGenerator.generateGoFile(goCode, "output.go");
     }
   }
@@ -142,7 +250,7 @@ public class SemanticAnalyzer {
     StringBuilder sb = new StringBuilder();
     sb.append("package main\n\n");
 
-    // First pass to check if fmt is needed
+    // verifica se precisa importar fmt -------------------------------------------------------------------------------------------------
     for (Token t : tokens) {
       if (t.getLexema().equals("carattere") || t.getLexema().equals("leggere")) {
         needsFmt = true;
@@ -150,12 +258,15 @@ public class SemanticAnalyzer {
       }
     }
 
-    // Only add fmt import if needed
+    // adiciona importacao de fmt se necessario -------------------------------------------------------------------------------------------------
     if (needsFmt) {
       sb.append("import (\n\t\"fmt\"\n)\n\n");
     }
 
+    // inicia o main ------------------------------------------------------------------------------------------------------------------------------
     sb.append("func main() {\n");
+
+    // traduz o codigo ------------------------------------------------------------------------------------------------------------------------------
     for (int i = 0; i < tokens.size(); i++) {
       Token t = tokens.get(i);
       String lex = t.getLexema();
@@ -166,13 +277,17 @@ public class SemanticAnalyzer {
           mainAberto = false;
         }
         dentroFuncao = true;
-        // Nome da função
         String nomeFunc = tokens.get(i + 1).getLexema();
         i++;
         sb.append("func ").append(nomeFunc).append("(");
+        
         // Parâmetros
         int j = i + 1;
         boolean dentroPar = false;
+        boolean primeiroParam = true;
+        StringBuilder paramBuilder = new StringBuilder();
+        String tipoParam = "";
+        
         while (j < tokens.size()) {
           Token tk = tokens.get(j);
           if (tk.getLexema().equals("(")) {
@@ -184,23 +299,40 @@ public class SemanticAnalyzer {
             i = j;
             break;
           }
-          // Parâmetros: tipo + ID
+          
+          // Parâmetros: ID + tipo
           if (tk.getLexema().equals(",")) {
+            if (!primeiroParam) {
+              sb.append(paramBuilder.toString().trim());
+              paramBuilder = new StringBuilder();
+            }
             sb.append(", ");
+            primeiroParam = false;
           } else if (tk.getTipo().equals("ID")) {
             String id = tk.getLexema();
             if (id.startsWith("_"))
               id = id.substring(1);
-            sb.append(id).append(" ");
+            paramBuilder.append(id);
+            paramBuilder.append(tipoParam);
+            tipoParam = "";
           } else if (tk.getLexema().equals("intero")) {
-            sb.append("int");
+            tipoParam = " int";
           } else if (tk.getLexema().equals("stringa")) {
-            sb.append("string");
+            tipoParam = " string";
           } else if (tk.getLexema().equals("booleano")) {
-            sb.append("bool");
+            tipoParam = " bool";
+          } else if (tk.getLexema().equals("galleggiante")) {
+            tipoParam = " float64";
           }
+          primeiroParam = false;
           j++;
         }
+        
+        // Adiciona o último parâmetro se houver
+        if (paramBuilder.length() > 0) {
+          sb.append(paramBuilder.toString().trim());
+        }
+        
         sb.append(") {\n");
         continue;
       }
@@ -280,7 +412,7 @@ public class SemanticAnalyzer {
       }
       // Fecha função ao encontrar 'fermare'
       if (dentroFuncao && lex.equals("fermare")) {
-        sb.append("}\n\n");
+        sb.append("\treturn\n}\n\n");
         dentroFuncao = false;
         continue;
       }
@@ -330,6 +462,10 @@ public class SemanticAnalyzer {
           sb.append("\tvar ");
           declaracaoNova = true;
           break;
+        case "galleggiante":
+          sb.append("\tvar ");
+          declaracaoNova = true;
+          break;
         case "=":
           sb.append(" = ");
           break;
@@ -368,7 +504,7 @@ public class SemanticAnalyzer {
             sb.append(")\n");
             carattere = false;
           } else if (declaracaoNovaString != "") {
-            sb.append("\n");
+            sb.append("\n\t");
             sb.append(declaracaoNovaString + " = " + declaracaoNovaString + "\n");
             declaracaoNovaString = "";
             declaracaoNova = false;
@@ -395,7 +531,12 @@ public class SemanticAnalyzer {
           sb.append("{\n");
           break;
         case "}":
-          sb.append("}\n");
+          // Verifica se o próximo token é altrimenti
+          if (i + 1 < tokens.size() && tokens.get(i + 1).getLexema().equals("altrimenti")) {
+            sb.append("} ");
+          } else {
+            sb.append("}\n");
+          }
           break;
         case "mentre":
           sb.append("\tfor ");
@@ -430,6 +571,12 @@ public class SemanticAnalyzer {
         case "<=":
           sb.append(" <= ");
           break;
+        case "o":
+          sb.append(" || ");
+          break;
+        case "e":
+          sb.append(" && ");
+          break;
         case "xD":
           break;
         case "leggere":
@@ -458,6 +605,8 @@ public class SemanticAnalyzer {
               leggere = false;
             }
           } else if (t.getTipo().equals("NUM")) {
+            sb.append(tokens.get(i).getLexema());
+          } else if (t.getTipo().equals("NUMDECIMAL")) {
             sb.append(tokens.get(i).getLexema());
           } else if (t.getTipo().equals("TEXTO")) {
             sb.append(tokens.get(i).getLexema());

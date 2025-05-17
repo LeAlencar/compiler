@@ -22,7 +22,7 @@ declaracao → tipo ID operadorAtribuicao expressao
 
 ifelse → **'se'** condicao '{' bloco '}' (**'altrimenti'** '{' bloco '}')?
 
-while → **'mentre'** condicao bloco | **'fare'** bloco **'mentre'** condicao ';'
+while → **'mentre'** condicao bloco | **'fare'** '{' bloco '}' **'mentre'** condicao ';'
 
 for → **'per'** '(' declaracao ';' condicao ';' atribuicao ';' ')' bloco
 
@@ -30,9 +30,9 @@ atribuicao → ID opAtribuicao expressao
 
 expressao → fator (opMat fator)?
 
-fator → ID | NUM | TEXTO | '(' expressao ')'
+fator → ID | NUM | TEXTO | '(' expressao ')' | NUMDECIMAL
 
-condicao → (ID | NUM) opRelacional (ID | NUM) | (ID | NUM) opRelacional (ID | NUM) (**'o'** | **'e'**) condicao | '(' (ID | NUM) opRelacional (ID | NUM) ')' | '(' (ID | NUM) opRelacional (ID | NUM) (**'o'** | **'e'**) condicao ')'
+condicao → fator opRelacional fator ((**'o'** | **'e'**) condicao)* | '(' condicao ')' 
 
 tipo → **'intero'** | **'galleggiante'** | **'stringa'** | **'booleano'**
 
@@ -47,6 +47,8 @@ ID → '\_' (a-z | A-Z)+
 NOME → (a-z | A-Z)+
 
 NUM → (0-9)+
+
+NUMDECIMAL → (0-9)+ '.' (0-9)+
 
 TEXTO → '"' (0-9 | a-z | A-Z | ' ' )+ '"'
 

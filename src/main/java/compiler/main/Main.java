@@ -29,7 +29,7 @@ public class Main {
 
         // Read from codigo.txt file
         String data = new String(Files.readAllBytes(Paths.get("src/main/java/compiler/main/codigo.txt")));
-
+        //System.out.println(data);
         // Análise léxica
         Lexer lexer = new Lexer(data);
         tokens = lexer.getTokens();
@@ -41,12 +41,13 @@ public class Main {
         }
 
         // Análise sintática
-        System.out.println("\nIniciando análise sintática:");
+        System.out.println("\nIniciando análise sintática...");
         Parser parser = new Parser(tokens);
         parser.main();
         System.out.println("\nSintaticamente correta\n");
 
         // Análise semântica
+        System.out.println("\nIniciando análise semântica...");
         SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(tokens);
         semanticAnalyzer.analyze();
     }

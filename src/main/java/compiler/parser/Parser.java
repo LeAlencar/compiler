@@ -35,10 +35,8 @@ public class Parser {
   public void loop(Node root, Tree tree) {
     if (bloco(root) || funcao(root)) {
       if (token.getTipo().equals("EOF")) {
-        // System.out.println("}");
-
-        // tree.preOrder();
-        // tree.printCode();
+        tree.preOrder();
+        tree.printCode();
         tree.printTree();
         return;
       } else {
@@ -139,8 +137,9 @@ public class Parser {
         farementre(linha) || (atribuicao(linha) && matchL(";", token.getLexema(), linha)) || chamadaFunc(linha)) {
       node.addNode(linha);
       return true;
+    } else {
+      return false;
     }
-    return false;
   }
 
   // LER
@@ -173,13 +172,15 @@ public class Parser {
       if (matchT("TEXTO", token.getLexema(), escrever)
           || (matchL("$", token.getLexema(), escrever) && matchT("ID", token.getLexema(), escrever))) {
         if (token.getTipo().equals("PERIOD")) {
-          while (token != null && token.getTipo().equals("PERIOD")) {
-            matchL(".", token.getLexema(), escrever);
-            if (token.getTipo().equals("$")) {
-              matchL("$", token.getLexema(), escrever);
-              matchT("ID", token.getLexema(), escrever);
-            } else {
-              matchT("TEXTO", token.getLexema(), escrever);
+          while (matchL(".", token.getLexema(), escrever)) {            
+            if (
+              (matchL("$", token.getLexema(), escrever) && 
+              matchT("ID", token.getLexema(), escrever)) ||
+              matchT("TEXTO", token.getLexema(), escrever)) {
+              
+            }
+            else {
+              return false;
             }
           }
 
@@ -208,21 +209,24 @@ public class Parser {
   // --------------------------------------------------------------------------------------------------------------------------------------------
   private boolean declaracao(Node node) {
     Node declaracao = new Node("declaracao");
-    int tipoIndex = currentTokenIndex - 1;
+
     if ((matchL("intero", token.getLexema(), declaracao) ||
         matchL("stringa", token.getLexema(), declaracao) ||
-        matchL("booleano", token.getLexema(), declaracao)) &&
+        matchL("booleano", token.getLexema(), declaracao) ||
+        matchL("galleggiante", token.getLexema(), declaracao)) &&
         matchT("ID", token.getLexema(), declaracao) &&
         operadorAtribuicao(declaracao)) {
-
-      // Adiciona variável na tabela de símbolos
-
       if (expressao(declaracao)) {
         node.addNode(declaracao);
         return true;
       }
+      else {
+        return false;
+      }
     }
-    return false;
+    else {
+      return false;
+    }
   }
 
   // EXPRESSÃO
@@ -230,17 +234,18 @@ public class Parser {
   private boolean expressao(Node node) {
     Node expressao = new Node("expressao");
     if (fator(expressao)) {
-      if (opMat(expressao)) {
-        if (fator(expressao)) {
-          node.addNode(expressao);
-          return true;
-        }
-      } else {
+      if (opMat(expressao) && fator(expressao)) {
+        node.addNode(expressao);
+        return true;
+      }
+      else {
         node.addNode(expressao);
         return true;
       }
     }
-    return false;
+    else {
+      return false;
+    }
   }
 
   private boolean fator(Node node) {
@@ -248,6 +253,7 @@ public class Parser {
     if (matchT("ID", token.getLexema(), fator) ||
         matchT("NUM", token.getLexema(), fator) ||
         matchT("TEXTO", token.getLexema(), fator) ||
+        matchT("NUMDECIMAL", token.getLexema(), fator) ||
         (matchL("(", token.getLexema(), fator) && expressao(fator) && matchL(")", token.getLexema(), fator))) {
       node.addNode(fator);
       return true;
@@ -358,32 +364,27 @@ public class Parser {
 
   private boolean condicao(Node node) {
     Node condicao = new Node("condicao");
-    boolean hasParentheses = false;
 
-    if (token.getTipo().equals("LPAREN")) {
-      matchL("(", token.getLexema(), condicao);
-      hasParentheses = true;
-    }
-
-    if ((matchT("ID", token.getLexema(), condicao) ||
-        matchT("NUM", token.getLexema(), condicao)) &&
-        opRelacional(condicao) &&
-        (matchT("ID", token.getLexema(), condicao) ||
-            matchT("NUM", token.getLexema(), condicao))) {
-
-      if (token.getTipo().equals("OR") || token.getTipo().equals("AND")) {
-        matchL(token.getTipo().equals("OR") ? "o" : "e", token.getLexema(), condicao);
-        condicao(condicao);
-      }
-
-      if (hasParentheses) {
-        matchL(")", token.getLexema(), condicao);
-      }
-
+    if (matchL("(", token.getLexema(), condicao) 
+        && condicao(condicao)  
+        && matchL(")", token.getLexema(), condicao)) {
       node.addNode(condicao);
       return true;
     }
-    return false;
+    else if (fator(condicao) && opRelacional(condicao) && fator(condicao)) {
+      if ((matchL("o", token.getLexema(), condicao) || matchL("e", token.getLexema(), condicao))
+          && condicao(condicao)) {
+        node.addNode(condicao);
+        return true;
+      }
+      else {
+        node.addNode(condicao);
+        return true;
+      }
+    }
+    else {
+      return false;
+    }
   }
 
   private boolean opMat(Node node) {
