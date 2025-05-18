@@ -4,7 +4,10 @@ import compiler.lexer.Token;
 import compiler.semantic.SymbolTable;
 import compiler.semantic.SemanticException;
 
+import java.io.IOException;
 import java.util.List;
+
+import javax.management.RuntimeErrorException;
 
 public class Parser {
 
@@ -54,9 +57,10 @@ public class Parser {
     return null;
   }
 
-  private void erro() {
+  private void erro(){
     System.out.println("\ntoken inválido: " + token.getLexema());
-    System.exit(1);
+    throw new RuntimeErrorException(null, "Erro de sintaxe");
+   
   }
 
   // BLOCO

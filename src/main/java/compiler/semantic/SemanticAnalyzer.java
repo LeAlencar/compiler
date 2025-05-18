@@ -52,7 +52,7 @@ public class SemanticAnalyzer {
         if (funcoes.contains(nomeFunc)) {
           System.err.println("Erro: função '" + nomeFunc + "' já declarada");
           erro = true;
-          System.exit(1);
+          throw new RuntimeException("Erro: função '" + nomeFunc + "' já declarada");
         } else {
           funcoes.add(nomeFunc);
           List<String> tiposParams = new ArrayList<>();
@@ -92,7 +92,7 @@ public class SemanticAnalyzer {
         String nomeFunc = token.getLexema();
         if (!funcoes.contains(nomeFunc)) {
           System.err.println("Erro: função '" + nomeFunc + "' não declarada");
-          System.exit(1);
+          throw new RuntimeException("Erro: função '" + nomeFunc + "' não declarada");
         }
         
         // Conta e verifica argumentos passados
@@ -134,7 +134,8 @@ public class SemanticAnalyzer {
           System.err.println("Erro: função '" + nomeFunc + "' espera " + expectedParams + 
                            " parâmetros, mas recebeu " + numArgs);
           erro = true;
-          System.exit(1);
+          throw new RuntimeException("Erro: função '" + nomeFunc + "' espera " + expectedParams + 
+                           " parâmetros, mas recebeu " + numArgs);
         }
         
         // Verifica tipos dos argumentos
@@ -147,7 +148,9 @@ public class SemanticAnalyzer {
                              " da função '" + nomeFunc + "'. Esperado: " + tipoEsperado + 
                              ", Recebido: " + tipoArg);
             erro = true;
-            System.exit(1);
+            throw new RuntimeException("Erro: tipo incompatível no argumento " + (k + 1) + 
+                             " da função '" + nomeFunc + "'. Esperado: " + tipoEsperado + 
+                             ", Recebido: " + tipoArg);
           }
         }
       }
@@ -209,14 +212,15 @@ public class SemanticAnalyzer {
               if (!tipoCompativel) {
                 System.err.println(
                     "Erro: tipo incompatível na atribuição de '" + token.getLexema() + "' (tipo " + tipoVar + ")");
-                System.exit(1);
+                throw new RuntimeException(
+                    "Erro: tipo incompatível na atribuição de '" + token.getLexema() + "' (tipo " + tipoVar + ")");
               } else {
                 try {
                   symbolTable.insert(token.getLexema(), false);
                   declaradas.add(token.getLexema());
                 } catch (SemanticException e) {
                   System.err.println(e.getMessage());
-                  System.exit(1);
+                  throw new RuntimeException(e.getMessage());
                 }
               }
             }
@@ -226,7 +230,7 @@ public class SemanticAnalyzer {
         if (!isDeclaracao) {
           if (!declaradas.contains(token.getLexema())) {
             System.err.println("Erro: variável '" + token.getLexema() + "' não declarada");
-            System.exit(1);
+            throw new RuntimeException("Erro: variável '" + token.getLexema() + "' não declarada");
           }
         }
       }
