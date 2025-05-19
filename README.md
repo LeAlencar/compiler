@@ -1,6 +1,6 @@
 # Gramática
 
-funcao → **'funzione'** NOME '(' (declaracaoFuncao)? ')' bloco? fermare
+funcao → **'funzione'** NOME '(' (declaracaoFuncao)? ')' bloco? **'fermare'**
 
 declaracaoFuncao → tipo ID | tipo ID ',' declaracaoFuncao
 
