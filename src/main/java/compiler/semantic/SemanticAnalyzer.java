@@ -67,7 +67,7 @@ public class SemanticAnalyzer {
     return null;
   }
 
-  public void analyze() {
+  public String analyze() {
     Set<String> declaradas = new HashSet<>();
     Set<String> funcoes = new HashSet<>();
     Map<String, Integer> funcoesParametros = new HashMap<>();
@@ -276,7 +276,6 @@ public class SemanticAnalyzer {
         // Se não é declaração, é uso: validar se já foi declarada
         if (!isDeclaracao) {
           if (!declaradas.contains(token.getLexema())) {
-            System.err.println("Erro: variável '" + token.getLexema() + "' não declarada");
             throw new RuntimeException("Erro: variável '" + token.getLexema() + "' não declarada");
           }
         }
@@ -320,7 +319,11 @@ public class SemanticAnalyzer {
       String goCode = translateToGo();
       System.out.println("\nSemanticamente correta\n");
       GoFileGenerator.generateGoFile(goCode, "output.go");
+
+      return goCode;
     }
+
+    return null;
   }
 
   // Traduz os tokens para GoLang conforme a gramática

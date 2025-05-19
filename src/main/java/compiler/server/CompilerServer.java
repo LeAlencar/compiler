@@ -72,8 +72,9 @@ public class CompilerServer {
                 result.append("\nIniciando análise semântica...\n");
                 outputStream.reset();
                 SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(tokens);
-                semanticAnalyzer.analyze();
+                String resultado = semanticAnalyzer.analyze();
                 // Obtém a saída da análise semântica
+                result.append(resultado);
                 result.append(outputStream.toString());
             } finally {
                 // Restaura o System.out original
