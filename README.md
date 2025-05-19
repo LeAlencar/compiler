@@ -1,6 +1,6 @@
 # Gramática
 
-funcao → **'funzione'** NOME '(' (declaracaoFuncao | ε) ')' bloco? fermare
+funcao → **'funzione'** NOME '(' (declaracaoFuncao)? ')' bloco? fermare
 
 declaracaoFuncao → tipo ID | tipo ID ',' declaracaoFuncao
 
@@ -10,7 +10,7 @@ linha → escrever | ler | declaracao ';' | ifelse | while | for | atribuicao ';
 
 chamadaFunc → NOME '(' argumentos? ')' ';'
 
-argumentos → exprChamadaFunc (',' exprChamadaFunc)*
+argumentos → exprChamadaFunc (',' exprChamadaFunc)\*
 
 exprChamadaFunc → ID | NUM | TEXTO | chamadaFunc
 
@@ -32,7 +32,7 @@ expressao → fator (opMat fator)?
 
 fator → ID | NUM | TEXTO | '(' expressao ')' | NUMDECIMAL
 
-condicao → fator opRelacional fator ((**'o'** | **'e'**) condicao)* | '(' condicao ')' 
+condicao → fator opRelacional fator ((**'o'** | **'e'**) condicao)\* | '(' condicao ')'
 
 tipo → **'intero'** | **'galleggiante'** | **'stringa'** | **'booleano'**
 
@@ -143,4 +143,3 @@ Resposta de erro:
    - Escolha "JSON" no dropdown
    - Cole o JSON com o código a ser compilado
 4. Envie a requisição
-
