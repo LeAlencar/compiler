@@ -15,6 +15,7 @@ import java.util.ArrayList;
 public class SemanticAnalyzer {
   private List<Token> tokens;
   private SymbolTable symbolTable;
+  private boolean erro = false;
 
   public SemanticAnalyzer(List<Token> tokens) {
     this.tokens = tokens;
@@ -24,6 +25,46 @@ public class SemanticAnalyzer {
 
   public SymbolTable getSymbolTable() {
     return symbolTable;
+  }
+
+  // Função auxiliar para verificar compatibilidade de tipos em comparações
+  private boolean tiposCompativeisParaComparacao(String tipo1, String tipo2) {
+    // Se ambos são do mesmo tipo, são compatíveis
+    if (tipo1.equals(tipo2)) {
+      return true;
+    }
+    
+    // Se um dos tipos for stringa, não é compatível com nenhum outro tipo
+    if (tipo1.equals("stringa") || tipo2.equals("stringa")) {
+      return false;
+    }
+    
+    // Se um dos tipos for booleano, não é compatível com nenhum outro tipo
+    if (tipo1.equals("booleano") || tipo2.equals("booleano")) {
+      return false;
+    }
+    
+    // intero e galleggiante são compatíveis entre si
+    if ((tipo1.equals("intero") && tipo2.equals("galleggiante")) ||
+        (tipo1.equals("galleggiante") && tipo2.equals("intero"))) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  // Função auxiliar para determinar o tipo de um token
+  private String determinarTipoToken(Token token, Map<String, String> tiposVariaveis) {
+    if (token.getTipo().equals("NUM")) {
+      return "intero";
+    } else if (token.getTipo().equals("NUMDECIMAL")) {
+      return "galleggiante";
+    } else if (token.getTipo().equals("TEXTO")) {
+      return "stringa";
+    } else if (token.getTipo().equals("ID")) {
+      return tiposVariaveis.get(token.getLexema());
+    }
+    return null;
   }
 
   public void analyze() {
@@ -165,63 +206,69 @@ public class SemanticAnalyzer {
               || prev.getLexema().equals("booleano") || prev.getLexema().equals("galleggiante"))) {
             tipoVar = prev.getLexema();
             isDeclaracao = true;
-            if (!declaradas.contains(token.getLexema())) {
-              // Verifica compatibilidade de tipo na atribuição
-              boolean tipoCompativel = true;
-              String valorAtribuido = null;
-              if (i + 2 < tokens.size() && tokens.get(i + 1).getLexema().equals("=")) {
-                Token valor = tokens.get(i + 2);
-                valorAtribuido = valor.getLexema();
-                // Se for literal
-                if (tipoVar.equals("intero") && valor.getTipo().equals("NUM")) {
-                  tipoCompativel = true;
-                } else if (tipoVar.equals("stringa") && valor.getTipo().equals("TEXTO")) {
-                  tipoCompativel = true;
-                } else if (tipoVar.equals("booleano")
-                    && (valorAtribuido.equals("true") || valorAtribuido.equals("false"))) {
-                  tipoCompativel = true;
-                } else if (tipoVar.equals("galleggiante") && valor.getTipo().equals("NUMDECIMAL")) {
-                  tipoCompativel = true;
-                } else if (valor.getTipo().equals("ID")) {
-                  // Se for variável, precisa estar declarada e ser do mesmo tipo
-                  if (declaradas.contains(valorAtribuido)) {
-                    // Procurar tipo da variável atribuída
-                    int tipoIdx = -1;
-                    for (int j = 0; j < i; j++) {
-                      if (tokens.get(j).getLexema().equals(valorAtribuido)) {
-                        if (j > 0) {
-                          Token tprev = tokens.get(j - 1);
-                          if (tprev.getLexema().equals(tipoVar)) {
-                            tipoCompativel = true;
-                            break;
-                          } else if (tprev.getLexema().equals("intero") || tprev.getLexema().equals("stringa")
-                              || tprev.getLexema().equals("booleano") || tprev.getLexema().equals("galleggiante")) {
-                            tipoCompativel = false;
-                            break;
-                          }
+            
+            // Verifica se a variável já foi declarada
+            if (declaradas.contains(token.getLexema())) {
+              System.err.println("Erro: variável '" + token.getLexema() + "' já foi declarada anteriormente");
+              erro = true;
+              throw new RuntimeException("Erro: variável '" + token.getLexema() + "' já foi declarada anteriormente");
+            }
+            
+            // Verifica compatibilidade de tipo na atribuição
+            boolean tipoCompativel = true;
+            String valorAtribuido = null;
+            if (i + 2 < tokens.size() && tokens.get(i + 1).getLexema().equals("=")) {
+              Token valor = tokens.get(i + 2);
+              valorAtribuido = valor.getLexema();
+              // Se for literal
+              if (tipoVar.equals("intero") && valor.getTipo().equals("NUM")) {
+                tipoCompativel = true;
+              } else if (tipoVar.equals("stringa") && valor.getTipo().equals("TEXTO")) {
+                tipoCompativel = true;
+              } else if (tipoVar.equals("booleano")
+                  && (valorAtribuido.equals("true") || valorAtribuido.equals("false"))) {
+                tipoCompativel = true;
+              } else if (tipoVar.equals("galleggiante") && valor.getTipo().equals("NUMDECIMAL")) {
+                tipoCompativel = true;
+              } else if (valor.getTipo().equals("ID")) {
+                // Se for variável, precisa estar declarada e ser do mesmo tipo
+                if (declaradas.contains(valorAtribuido)) {
+                  // Procurar tipo da variável atribuída
+                  int tipoIdx = -1;
+                  for (int j = 0; j < i; j++) {
+                    if (tokens.get(j).getLexema().equals(valorAtribuido)) {
+                      if (j > 0) {
+                        Token tprev = tokens.get(j - 1);
+                        if (tprev.getLexema().equals(tipoVar)) {
+                          tipoCompativel = true;
+                          break;
+                        } else if (tprev.getLexema().equals("intero") || tprev.getLexema().equals("stringa")
+                            || tprev.getLexema().equals("booleano") || tprev.getLexema().equals("galleggiante")) {
+                          tipoCompativel = false;
+                          break;
                         }
                       }
                     }
-                  } else {
-                    tipoCompativel = false;
                   }
                 } else {
                   tipoCompativel = false;
                 }
-              }
-              if (!tipoCompativel) {
-                System.err.println(
-                    "Erro: tipo incompatível na atribuição de '" + token.getLexema() + "' (tipo " + tipoVar + ")");
-                throw new RuntimeException(
-                    "Erro: tipo incompatível na atribuição de '" + token.getLexema() + "' (tipo " + tipoVar + ")");
               } else {
-                try {
-                  symbolTable.insert(token.getLexema(), false);
-                  declaradas.add(token.getLexema());
-                } catch (SemanticException e) {
-                  System.err.println(e.getMessage());
-                  throw new RuntimeException(e.getMessage());
-                }
+                tipoCompativel = false;
+              }
+            }
+            if (!tipoCompativel) {
+              System.err.println(
+                  "Erro: tipo incompatível na atribuição de '" + token.getLexema() + "' (tipo " + tipoVar + ")");
+              throw new RuntimeException(
+                  "Erro: tipo incompatível na atribuição de '" + token.getLexema() + "' (tipo " + tipoVar + ")");
+            } else {
+              try {
+                symbolTable.insert(token.getLexema(), false);
+                declaradas.add(token.getLexema());
+              } catch (SemanticException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException(e.getMessage());
               }
             }
           }
@@ -232,6 +279,40 @@ public class SemanticAnalyzer {
             System.err.println("Erro: variável '" + token.getLexema() + "' não declarada");
             throw new RuntimeException("Erro: variável '" + token.getLexema() + "' não declarada");
           }
+        }
+      }
+
+      // Verifica comparações em condicionais e laços
+      if (token.getLexema().equals("se") || token.getLexema().equals("mentre") || 
+          token.getLexema().equals("per") || token.getLexema().equals("fare")) {
+        int j = i + 1;
+        while (j < tokens.size() && !tokens.get(j).getLexema().equals("{")) {
+          Token tk = tokens.get(j);
+          if (tk.getLexema().equals("==") || tk.getLexema().equals("!=") || 
+              tk.getLexema().equals(">") || tk.getLexema().equals("<") || 
+              tk.getLexema().equals(">=") || tk.getLexema().equals("<=")) {
+            
+            // Pega o token antes do operador
+            Token antes = tokens.get(j - 1);
+            // Pega o token depois do operador
+            Token depois = tokens.get(j + 1);
+            
+            String tipoAntes = determinarTipoToken(antes, tiposVariaveis);
+            String tipoDepois = determinarTipoToken(depois, tiposVariaveis);
+            
+            if (tipoAntes == null || tipoDepois == null) {
+              System.err.println("Erro: não foi possível determinar o tipo de uma das variáveis na comparação");
+              erro = true;
+              throw new RuntimeException("Erro: não foi possível determinar o tipo de uma das variáveis na comparação");
+            }
+            
+            if (!tiposCompativeisParaComparacao(tipoAntes, tipoDepois)) {
+              System.err.println("Erro: tipos incompatíveis na comparação. Tipo1: " + tipoAntes + ", Tipo2: " + tipoDepois);
+              erro = true;
+              throw new RuntimeException("Erro: tipos incompatíveis na comparação. Tipo1: " + tipoAntes + ", Tipo2: " + tipoDepois);
+            }
+          }
+          j++;
         }
       }
     }
