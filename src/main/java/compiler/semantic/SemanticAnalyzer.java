@@ -1,5 +1,6 @@
 package compiler.semantic;
 
+import compiler.generator.LuaFileGenerator;
 import compiler.generator.GoFileGenerator;
 import compiler.lexer.Token;
 import compiler.semantic.SymbolTable;
@@ -317,13 +318,336 @@ public class SemanticAnalyzer {
     }
     if (!erro) {
       String goCode = translateToGo();
+      String luaCode = translateToLua();
       System.out.println("\nSemanticamente correta\n");
       GoFileGenerator.generateGoFile(goCode, "output.go");
+      LuaFileGenerator.generateLuaFile(luaCode, "output.lua");
+      System.out.println("Código Lua gerado: output.lua");
 
       return goCode;
     }
 
     return null;
+  }
+
+  // Traduz os tokens para Lua conforme a gramática
+  public String translateToLua() {
+    boolean carattere = false;
+    boolean leggere = false;
+    boolean mainAberto = true;
+    boolean dentroFuncao = false;
+    StringBuilder sb = new StringBuilder();
+    
+    // Start main function
+    sb.append("-- Main program\n");
+
+    // Translate the code
+    for (int i = 0; i < tokens.size(); i++) {
+      Token t = tokens.get(i);
+      String lex = t.getLexema();
+
+      // Detect function declaration
+      if (lex.equals("funzione") && i + 1 < tokens.size() && tokens.get(i + 1).getTipo().equals("NOME")) {
+        if (mainAberto) {
+          mainAberto = false;
+        }
+        dentroFuncao = true;
+        String nomeFunc = tokens.get(i + 1).getLexema();
+        i++;
+        sb.append("function ").append(nomeFunc).append("(");
+        
+        // Parameters
+        int j = i + 1;
+        boolean primeiroParam = true;
+        StringBuilder paramBuilder = new StringBuilder();
+        
+        while (j < tokens.size()) {
+          Token tk = tokens.get(j);
+          if (tk.getLexema().equals("(")) {
+            j++;
+            continue;
+          }
+          if (tk.getLexema().equals(")")) {
+            i = j;
+            break;
+          }
+          
+          // Parameters: just ID (Lua is dynamically typed)
+          if (tk.getLexema().equals(",")) {
+            if (!primeiroParam) {
+              sb.append(paramBuilder.toString().trim());
+              paramBuilder = new StringBuilder();
+            }
+            sb.append(", ");
+            primeiroParam = false;
+          } else if (tk.getTipo().equals("ID")) {
+            String id = tk.getLexema();
+            if (id.startsWith("_"))
+              id = id.substring(1);
+            paramBuilder.append(id);
+            primeiroParam = false;
+          } else if (tk.getLexema().equals("intero") || 
+                    tk.getLexema().equals("stringa") || 
+                    tk.getLexema().equals("booleano") || 
+                    tk.getLexema().equals("galleggiante")) {
+            // Skip type declarations in Lua
+            j++;
+            continue;
+          }
+          j++;
+        }
+        
+        // Add last parameter if exists
+        if (paramBuilder.length() > 0) {
+          sb.append(paramBuilder.toString().trim());
+        }
+        
+        sb.append(")\n");
+        continue;
+      }
+
+      // Handle do-while pattern
+      if (lex.equals("fare") && i + 1 < tokens.size() && tokens.get(i + 1).getLexema().equals("{")) {
+        sb.append("\trepeat\n");
+        i += 1; // Skip '{'
+        continue;
+      }
+      if (lex.equals("}") && i + 3 < tokens.size() && tokens.get(i + 1).getLexema().equals("mentre")) {
+        sb.append("\tuntil not (");
+        // Copy condition after 'mentre', removing '_' from IDs
+        int j = i + 2;
+        while (j < tokens.size() && !tokens.get(j).getLexema().equals(";")) {
+          Token condTok = tokens.get(j);
+          if (condTok.getTipo().equals("ID")) {
+            String id = condTok.getLexema();
+            if (id.startsWith("_")) {
+              sb.append(id.substring(1));
+            } else {
+              sb.append(id);
+            }
+          } else {
+            sb.append(condTok.getLexema());
+          }
+          sb.append(" ");
+          j++;
+        }
+        sb.append(")\n");
+        i = j; // Skip to ';'
+        continue;
+      }
+
+      // Handle for loop
+      if (lex.equals("per") && i + 1 < tokens.size() && tokens.get(i + 1).getLexema().equals("(")) {
+        sb.append("\tfor ");
+        i += 2; // Skip 'per' and '('
+        // Capture three clauses
+        StringBuilder init = new StringBuilder();
+        StringBuilder cond = new StringBuilder();
+        StringBuilder inc = new StringBuilder();
+        int clause = 0;
+        while (i < tokens.size() && !tokens.get(i).getLexema().equals(")")) {
+          Token tk = tokens.get(i);
+          if (tk.getLexema().equals(";")) {
+            clause++;
+            i++;
+            continue;
+          }
+          String val = tk.getLexema();
+          if (tk.getTipo().equals("ID") && val.startsWith("_"))
+            val = val.substring(1);
+          // Initialization: no type needed in Lua
+          if (clause == 0) {
+            init.append(val).append(" ");
+          } else if (clause == 1)
+            cond.append(val).append(" ");
+          else if (clause == 2)
+            inc.append(val).append(" ");
+          i++;
+        }
+        sb.append(init.toString().trim()).append(" do\n");
+        continue;
+      }
+
+      // Handle function return
+      if (dentroFuncao && lex.equals("fermare")) {
+        sb.append("\treturn\nend\n\n");
+        dentroFuncao = false;
+        continue;
+      }
+
+      // Handle function call
+      if (!dentroFuncao && t.getTipo().equals("NOME") && i + 1 < tokens.size()
+          && tokens.get(i + 1).getLexema().equals("(")
+          && (i == 0 || !(tokens.get(i - 1).getTipo().equals("NUM") || tokens.get(i - 1).getTipo().equals("ID")
+              || tokens.get(i - 1).getTipo().equals("TEXTO") || tokens.get(i - 1).getTipo().equals("NOME")))) {
+        sb.append(t.getLexema()).append("(");
+        i += 2; // Skip NOME and '('
+        // Arguments
+        boolean firstArg = true;
+        while (i < tokens.size() && !tokens.get(i).getLexema().equals(")")) {
+          Token arg = tokens.get(i);
+          if (!firstArg && arg.getLexema().equals(",")) {
+            sb.append(", ");
+            i++;
+            continue;
+          }
+          if (arg.getTipo().equals("ID")) {
+            String id = arg.getLexema();
+            if (id.startsWith("_"))
+              id = id.substring(1);
+            sb.append(id);
+          } else if (arg.getTipo().equals("NUM") || arg.getTipo().equals("NUMDECIMAL")) {
+            sb.append(arg.getLexema());
+          } else if (arg.getTipo().equals("TEXTO")) {
+            sb.append("\"").append(arg.getLexema().replace("\"", "\\\"")).append("\"");
+          }
+          firstArg = false;
+          i++;
+        }
+        sb.append(")\n");
+        continue;
+      }
+
+      switch (lex) {
+        case "intero":
+        case "stringa":
+        case "booleano":
+        case "galleggiante":
+          sb.append("\tlocal ");
+          break;
+        case "=":
+          sb.append(" = ");
+          break;
+        case "+=":
+          sb.append(" = ").append(tokens.get(i-1).getLexema()).append(" + ");
+          break;
+        case "-=":
+          sb.append(" = ").append(tokens.get(i-1).getLexema()).append(" - ");
+          break;
+        case "*=":
+          sb.append(" = ").append(tokens.get(i-1).getLexema()).append(" * ");
+          break;
+        case "/=":
+          sb.append(" = ").append(tokens.get(i-1).getLexema()).append(" / ");
+          break;
+        case "%=":
+          sb.append(" = ").append(tokens.get(i-1).getLexema()).append(" % ");
+          break;
+        case "+":
+          sb.append(" + ");
+          break;
+        case "-":
+          sb.append(" - ");
+          break;
+        case "*":
+          sb.append(" * ");
+          break;
+        case "/":
+          sb.append(" / ");
+          break;
+        case "%":
+          sb.append(" % ");
+          break;
+        case ";":
+          if (carattere) {
+            sb.append(")\n");
+            carattere = false;
+          } else {
+            sb.append("\n");
+          }
+          break;
+        case "carattere":
+          sb.append("\tprint(");
+          carattere = true;
+          break;
+        case "se":
+          sb.append("\tif ");
+          break;
+        case "altrimenti":
+          sb.append(" else ");
+          break;
+        case "{":
+          sb.append(" then\n");
+          break;
+        case "}":
+          // Check if next token is altrimenti
+          if (i + 1 < tokens.size() && tokens.get(i + 1).getLexema().equals("altrimenti")) {
+            sb.append(" ");
+          } else {
+            sb.append("end\n");
+          }
+          break;
+        case "mentre":
+          sb.append("\twhile ");
+          break;
+        case "fare":
+          sb.append("\trepeat\n");
+          break;
+        case "per":
+          sb.append("\tfor ");
+          break;
+        case "(":
+          sb.append("(");
+          break;
+        case ")":
+          sb.append(")");
+          break;
+        case "==":
+          sb.append(" == ");
+          break;
+        case "!=":
+          sb.append(" ~= ");
+          break;
+        case ">":
+          sb.append(" > ");
+          break;
+        case "<":
+          sb.append(" < ");
+          break;
+        case ">=":
+          sb.append(" >= ");
+          break;
+        case "<=":
+          sb.append(" <= ");
+          break;
+        case "o":
+          sb.append(" or ");
+          break;
+        case "e":
+          sb.append(" and ");
+          break;
+        case "leggere":
+          sb.append("\tio.read(\"*n\")");
+          leggere = true;
+          break;
+        default:
+          if (t.getTipo().equals("ID")) {
+            String id = t.getLexema();
+            if (id.startsWith("_")) {
+              sb.append(id.substring(1));
+            } else {
+              sb.append(id);
+            }
+            if (carattere) {
+              sb.append(")");
+              carattere = false;
+            }
+            if (leggere) {
+              sb.append(")");
+              leggere = false;
+            }
+          } else if (t.getTipo().equals("NUM") || t.getTipo().equals("NUMDECIMAL")) {
+            sb.append(t.getLexema());
+          } else if (t.getTipo().equals("TEXTO")) {
+            sb.append("\"").append(t.getLexema().replace("\"", "\\\"")).append("\"");
+            if (leggere) {
+              sb.append(", &");
+            }
+          }
+      }
+    }
+
+    return sb.toString();
   }
 
   // Traduz os tokens para GoLang conforme a gramática
@@ -525,8 +849,10 @@ public class SemanticAnalyzer {
             if (id.startsWith("_"))
               id = id.substring(1);
             sb.append(id);
-          } else {
+          } else if (arg.getTipo().equals("NUM") || arg.getTipo().equals("NUMDECIMAL")) {
             sb.append(arg.getLexema());
+          } else if (arg.getTipo().equals("TEXTO")) {
+            sb.append("\"").append(arg.getLexema().replace("\"", "\\\"")).append("\"");
           }
           firstArg = false;
           i++;
@@ -627,13 +953,13 @@ public class SemanticAnalyzer {
           }
           break;
         case "mentre":
-          sb.append("\tfor ");
+          sb.append("\twhile (");
           break;
         case "fare":
-          sb.append("\tfor ");
+          sb.append("\tdo {");
           break;
         case "per":
-          sb.append("\tfor ");
+          sb.append("\tfor (");
           break;
         case "(":
           sb.append("(");
@@ -706,7 +1032,7 @@ public class SemanticAnalyzer {
     }
     // Ao final, feche o main apenas se ele ainda estiver aberto
     if (mainAberto) {
-      sb.append("\n}\n");
+      sb.append("\n\treturn 0;\n}\n");
     }
     return sb.toString();
   }
