@@ -1,14 +1,14 @@
 package compiler.main;
 
-import compiler.lexer.Lexer;
-import compiler.lexer.Token;
-import compiler.parser.Parser;
-import compiler.semantic.SemanticAnalyzer;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+
+import compiler.lexer.Lexer;
+import compiler.lexer.Token;
+import compiler.parser.Parser;
+import compiler.semantic.SemanticAnalyzer;
 
 // Exemplo de entrada com sintaxe em italiano
 // String data = "intero _x = 10; intero _y = 5; se (_x > _y) {_x = _x + _y;}
@@ -27,9 +27,8 @@ public class Main {
     public static void main(String[] args) throws IOException {
         List<Token> tokens = null;
 
-        // Read from codigo.txt file
         String data = new String(Files.readAllBytes(Paths.get("src/main/java/compiler/main/codigo.txt")));
-        //System.out.println(data);
+       
         // Análise léxica
         Lexer lexer = new Lexer(data);
         tokens = lexer.getTokens();

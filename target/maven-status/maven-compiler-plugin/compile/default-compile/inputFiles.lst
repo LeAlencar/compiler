@@ -6,12 +6,14 @@
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/semantic/SemanticAnalyzer.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/generator/GoFileGenerator.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/ID.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/DecimalNumber.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/NOME.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/parser/Node.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/semantic/Symbol.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/AFD.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/main/Main.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/parser/Tree.java
+/Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/generator/LuaFileGenerator.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/parser/Parser.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/semantic/SemanticException.java
 /Users/leandroalencar/dev/learn/compilador/src/main/java/compiler/lexer/Lexer.java

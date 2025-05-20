@@ -1,11 +1,5 @@
 package compiler.server;
 
-import com.sun.net.httpserver.HttpServer;
-import compiler.lexer.Lexer;
-import compiler.lexer.Token;
-import compiler.parser.Parser;
-import compiler.semantic.SemanticAnalyzer;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,6 +7,13 @@ import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.Executors;
+
+import com.sun.net.httpserver.HttpServer;
+
+import compiler.lexer.Lexer;
+import compiler.lexer.Token;
+import compiler.parser.Parser;
+import compiler.semantic.SemanticAnalyzer;
 
 public class CompilerServer {
     private final int port;
@@ -31,6 +32,16 @@ public class CompilerServer {
     }
 
     private void handleCompileRequest(com.sun.net.httpserver.HttpExchange exchange) throws IOException {
+        // Adiciona headers CORS
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, OPTIONS");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
+
+        // Responde a requisições OPTIONS (preflight)
+        if (exchange.getRequestMethod().equals("OPTIONS")) {
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
         if (!exchange.getRequestMethod().equals("POST")) {
             sendResponse(exchange, 405, "Método não permitido");
             return;
@@ -82,10 +93,20 @@ public class CompilerServer {
             }
 
             // Envia resposta de sucesso
+            try {
+                Thread.sleep(1500); // Delay de 1.5 segundos
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
             sendResponse(exchange, 200, result.toString());
 
         } catch (Exception e) {
             // Envia resposta de erro
+            try {
+                Thread.sleep(1500); // Delay de 1.5 segundos
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
             sendResponse(exchange, 400, "Erro na compilação: " + e.getMessage());
         }
     }

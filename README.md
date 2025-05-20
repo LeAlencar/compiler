@@ -16,7 +16,7 @@ exprChamadaFunc → ID | NUM | TEXTO | chamadaFunc
 
 escrever → **'carattere'** '<<' (TEXTO | '$' ID) ('.' ('$' ID | TEXTO))\* ';'
 
-ler → **'leggere'** 'xD' TEXTO ID? ';'
+ler → **'leggere'** 'xD' TEXTO ID? ';'ler → **'leggere'** 'xD' TEXTO ID? ';'
 
 declaracao → tipo ID operadorAtribuicao expressao
 

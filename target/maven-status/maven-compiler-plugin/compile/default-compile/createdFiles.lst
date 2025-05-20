@@ -4,9 +4,11 @@ compiler/parser/Parser.class
 compiler/parser/Node.class
 compiler/main/Main.class
 compiler/semantic/SemanticAnalyzer.class
+compiler/lexer/DecimalNumber.class
 compiler/lexer/MathOperator.class
 compiler/lexer/ID.class
 compiler/lexer/AFD.class
+compiler/generator/LuaFileGenerator.class
 compiler/server/CompilerServer.class
 compiler/lexer/Lexer.class
 compiler/lexer/NOME.class

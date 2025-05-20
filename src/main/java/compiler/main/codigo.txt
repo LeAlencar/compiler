@@ -2,7 +2,9 @@ intero _x = 10;
 intero _y = 5; 
 intero _z = _x * _y;
 galleggiante _w = 1.0;
+stringa _v = "";
 carattere << $_z;
+leggere xD "Teste de variavel" _l;
 teste(_y);
 
 funzione teste(intero _testando)

@@ -1,26 +1,17 @@
 package compiler.parser;
 
-import compiler.lexer.Token;
-import compiler.semantic.SymbolTable;
-import compiler.semantic.SemanticException;
-
-import java.io.IOException;
 import java.util.List;
 
 import javax.management.RuntimeErrorException;
+
+import compiler.lexer.Token;
 
 public class Parser {
 
   private List<Token> tokens;
   private Token token;
   private int currentTokenIndex;
-  private String lastToken = "";
-  private boolean isPrintln = false;
-  private boolean isScanln = false;
-  private boolean isFare = false;
-  private boolean isMentre = false;
-  private boolean isPer = false;
-  private int semicolons = 0;
+
 
   public Parser(List<Token> tokens) {
     this.tokens = tokens;
@@ -41,7 +32,6 @@ public class Parser {
         tree.preOrder();
         tree.printCode();
         tree.printTree();
-        return;
       } else {
         loop(root, tree);
       }
@@ -152,16 +142,11 @@ public class Parser {
     Node leitura = new Node("leitura");
     if (matchL("leggere", token.getLexema(), leitura) &&
         matchL("xD", token.getLexema(), leitura) &&
-        matchT("TEXTO", token.getLexema(), leitura)) {
-
-      if (token != null && token.getTipo().equals("ID")) {
-        matchT("ID", token.getLexema(), leitura);
-      }
-
-      if (matchL(";", token.getLexema(), leitura)) {
-        node.addNode(leitura);
-        return true;
-      }
+        matchT("TEXTO", token.getLexema(), leitura) &&
+        matchT("ID", token.getLexema(), leitura) &&
+        matchL(";", token.getLexema(), leitura)) {
+      node.addNode(leitura);
+      return true;
     }
     return false;
   }

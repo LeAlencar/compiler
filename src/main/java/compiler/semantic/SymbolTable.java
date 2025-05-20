@@ -17,9 +17,7 @@ public class SymbolTable {
         this.table = new HashMap<String, Symbol>();
     }
 
-    //NOTE: in the github version this function does not
-    // check parent scopes when doing lookups, I fixed that in later revisions
-    // to match this
+  
     public Symbol lookup(String sym) {
         Symbol result;
         result = table.get(sym);

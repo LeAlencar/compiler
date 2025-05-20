@@ -1,17 +1,14 @@
 package compiler.semantic;
 
-import compiler.generator.LuaFileGenerator;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import compiler.generator.GoFileGenerator;
 import compiler.lexer.Token;
-import compiler.semantic.SymbolTable;
-import compiler.semantic.SemanticException;
-
-import java.util.List;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
 
 public class SemanticAnalyzer {
   private List<Token> tokens;
@@ -709,7 +706,7 @@ public class SemanticAnalyzer {
     }
     // Ao final, feche o main apenas se ele ainda estiver aberto
     if (mainAberto) {
-      sb.append("\n\treturn 0;\n}\n");
+      sb.append("\n}\n");
     }
     return sb.toString();
   }
