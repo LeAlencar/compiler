@@ -6,11 +6,10 @@ import compiler.lexer.Token;
 import compiler.parser.Parser;
 import compiler.semantic.SemanticAnalyzer;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.Executors;
 
@@ -24,13 +23,54 @@ public class CompilerServer {
 
     public void start() throws IOException {
         server = HttpServer.create(new InetSocketAddress(port), 0);
+        server.createContext("/", this::handleRootRequest);
         server.createContext("/compile", this::handleCompileRequest);
         server.setExecutor(Executors.newFixedThreadPool(10));
         server.start();
         System.out.println("Servidor iniciado na porta " + port);
     }
 
+    private void handleRootRequest(com.sun.net.httpserver.HttpExchange exchange) throws IOException {
+        // Adiciona headers CORS
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
+
+        // Responde a requisições OPTIONS (preflight)
+        if (exchange.getRequestMethod().equals("OPTIONS")) {
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
+        if (!exchange.getRequestMethod().equals("GET")) {
+            sendResponse(exchange, 405, "Método não permitido");
+            return;
+        }
+
+        try {
+            // Lê o arquivo index.html
+            String htmlContent = new String(Files.readAllBytes(Paths.get("index.html")));
+            
+            // Configura o tipo de conteúdo como HTML
+            exchange.getResponseHeaders().add("Content-Type", "text/html; charset=UTF-8");
+            sendResponse(exchange, 200, htmlContent);
+        } catch (IOException e) {
+            sendResponse(exchange, 500, "Erro ao ler o arquivo index.html: " + e.getMessage());
+        }
+    }
+
     private void handleCompileRequest(com.sun.net.httpserver.HttpExchange exchange) throws IOException {
+        // Adiciona headers CORS
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, OPTIONS");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
+
+        // Responde a requisições OPTIONS (preflight)
+        if (exchange.getRequestMethod().equals("OPTIONS")) {
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
         if (!exchange.getRequestMethod().equals("POST")) {
             sendResponse(exchange, 405, "Método não permitido");
             return;
@@ -86,7 +126,7 @@ public class CompilerServer {
 
         } catch (Exception e) {
             // Envia resposta de erro
-            sendResponse(exchange, 400, "Erro na compilação: " + e.getMessage());
+            sendResponse(exchange, 400, e.getMessage());
         }
     }
 
